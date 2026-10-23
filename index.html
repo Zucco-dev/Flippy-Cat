@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flippy Cat</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="game.js" defer></script>
+</head>
+<body>
+    <main class="app">
+        <div class="stars" id="stars"></div>
+
+        <header class="logo" id="logo">
+            <div class="cat-logo">🐱</div>
+            <h1>FLIPPY <span>CAT</span></h1>
+            <p>UM PEQUENO GATO, UMA GRANDE AVENTURA</p>
+        </header>
+
+        <section class="panel" id="menu">
+            <label for="nickname">SEU NICKNAME</label>
+
+            <div class="nickname-row">
+                <input
+                    id="nickname"
+                    type="text"
+                    maxlength="20"
+                    placeholder="Digite seu nickname"
+                    autocomplete="nickname"
+                >
+                <button id="saveNickname" class="save-button">
+                    Salvar
+                </button>
+            </div>
+
+            <div class="stats">
+                <div class="stat">
+                    <span>⭐</span>
+                    <strong id="level">1</strong>
+                    <small>NÍVEL</small>
+                </div>
+
+                <div class="stat">
+                    <span>🏆</span>
+                    <strong id="record">0</strong>
+                    <small>RECORDE</small>
+                </div>
+            </div>
+
+            <button id="playButton" class="play-button">
+                ▶ JOGAR
+            </button>
+
+            <p class="hint">Prepare suas patinhas para a aventura!</p>
+        </section>
+
+        <section class="game-panel" id="gameScreen" hidden>
+            <div class="game-top">
+                <button id="backButton" class="small-button">
+                    ← Menu
+                </button>
+
+                <div class="game-score">
+                    PONTOS <strong id="score">0</strong>
+                </div>
+            </div>
+
+            <canvas
+                id="gameCanvas"
+                width="360"
+                height="520"
+                aria-label="Jogo Flippy Cat. Clique ou pressione espaço para fazer o gato voar."
+            ></canvas>
+
+            <div class="game-message" id="gameMessage">
+                <h2>Pronto para voar?</h2>
+                <p>Clique no jogo ou pressione ESPAÇO!</p>
+                <button id="startButton" class="play-button">
+                    COMEÇAR
+                </button>
+            </div>
+
+            <p class="game-hint">
+                Clique, toque na tela ou pressione ESPAÇO para voar.
+            </p>
+        </section>
+
+        <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+        <footer>FLIPPY CAT © 2026 · FEITO COM 💜</footer>
+    </main>
+</body>
+</html>
