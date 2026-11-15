@@ -4,10 +4,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Flippy Cat</title>
+
+    <meta name="theme-color" content="#8b5cf6">
+    <meta name="description" content="Um pequeno gato, uma grande aventura!">
+
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" href="/icons/icon-192.png">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+
     <link rel="stylesheet" href="style.css">
     <script src="game.js" defer></script>
+
+    <script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", () => {
+                navigator.serviceWorker.register("/service-worker.js")
+                    .catch(error => {
+                        console.error("Erro ao registrar Service Worker:", error);
+                    });
+            });
+        }
+    </script>
 </head>
+
 <body>
     <main class="app">
         <div class="stars" id="stars"></div>
