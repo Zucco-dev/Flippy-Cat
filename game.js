@@ -1,3 +1,4 @@
+
 "use strict";
 
 // ========================================
@@ -51,123 +52,117 @@ const STORAGE_KEY = "flippyCatPlayer";
 
 const SKINS = [
     {
-        id: "classic",
-        name: "Clássico",
-        emoji: "🐱",
-        points: 0,
-        body: "#f2a35a",
-        dark: "#99552d",
-        white: "#fffaf2",
-        stripe: "#cf7b3d",
-        eye: "#202b83",
-        nose: "#713d35",
+        id: "classic", name: "Clássico", emoji: "🐱", points: 0,
+        body: "#f2a35a", dark: "#99552d", white: "#fffaf2",
+        stripe: "#cf7b3d", eye: "#202b83", nose: "#713d35",
         cheek: "#ff9cae"
     },
     {
-        id: "purple",
-        name: "Roxo",
-        emoji: "💜",
-        points: 15,
-        body: "#aa82e8",
-        dark: "#563080",
-        white: "#f5eaff",
-        stripe: "#8057bd",
-        eye: "#252080",
-        nose: "#563080",
+        id: "purple", name: "Roxo", emoji: "💜", points: 15,
+        body: "#aa82e8", dark: "#563080", white: "#f5eaff",
+        stripe: "#8057bd", eye: "#252080", nose: "#563080",
         cheek: "#efb4ff"
     },
     {
-        id: "silver",
-        name: "Prateado",
-        emoji: "🩶",
-        points: 30,
-        body: "#c6d0df",
-        dark: "#596273",
-        white: "#ffffff",
-        stripe: "#929eaf",
-        eye: "#173c91",
-        nose: "#596273",
+        id: "silver", name: "Prateado", emoji: "🩶", points: 30,
+        body: "#c6d0df", dark: "#596273", white: "#ffffff",
+        stripe: "#929eaf", eye: "#173c91", nose: "#596273",
         cheek: "#f3a8bb"
     },
     {
-        id: "flame",
-        name: "Flamejante",
-        emoji: "🔥",
-        points: 50,
-        body: "#ff914d",
-        dark: "#7d2b19",
-        white: "#fff0dc",
-        stripe: "#d94d25",
-        eye: "#54234c",
-        nose: "#7d2b19",
+        id: "flame", name: "Flamejante", emoji: "🔥", points: 50,
+        body: "#ff914d", dark: "#7d2b19", white: "#fff0dc",
+        stripe: "#d94d25", eye: "#54234c", nose: "#7d2b19",
         cheek: "#ffb08a"
     },
     {
-        id: "gold",
-        name: "Dourado",
-        emoji: "🌟",
-        points: 100,
-        body: "#ffd447",
-        dark: "#8a5b12",
-        white: "#fff8d9",
-        stripe: "#dca92e",
-        eye: "#34306e",
-        nose: "#8a5b12",
+        id: "gold", name: "Dourado", emoji: "🌟", points: 100,
+        body: "#ffd447", dark: "#8a5b12", white: "#fff8d9",
+        stripe: "#dca92e", eye: "#34306e", nose: "#8a5b12",
         cheek: "#ffb0a6"
     }
 ];
 
 // ========================================
-// CONQUISTAS
+// 36 CONQUISTAS
 // ========================================
 
 const ACHIEVEMENTS = [
-    {
-        id: "first_flight",
-        name: "Primeiro Voo",
-        description: "Faça seu primeiro ponto.",
-        emoji: "🐾",
-        points: 1
-    },
-    {
-        id: "persistent",
-        name: "Persistente",
-        description: "Alcance 10 pontos em uma partida.",
-        emoji: "⭐",
-        points: 10
-    },
-    {
-        id: "flying_addict",
-        name: "Viciado em Voar",
-        description: "Alcance 25 pontos em uma partida.",
-        emoji: "🚀",
-        points: 25
-    },
-    {
-        id: "sky_master",
-        name: "Mestre dos Céus",
-        description: "Alcance 50 pontos em uma partida.",
-        emoji: "👑",
-        points: 50
-    },
-    {
-        id: "flippy_legend",
-        name: "Lenda do Flippy Cat",
-        description: "Alcance 100 pontos em uma partida.",
-        emoji: "🏆",
-        points: 100
-    }
+    // PONTUAÇÃO (6)
+    { id: "first_flight", category: "🏆 Pontuação", name: "Primeiro voo", description: "Fazer 1 ponto.", emoji: "🐾", test: p => p.record >= 1 },
+    { id: "starting", category: "🏆 Pontuação", name: "Está começando!", description: "Fazer 5 pontos em uma partida.", emoji: "⭐", test: p => p.record >= 5 },
+    { id: "skilled_cat", category: "🏆 Pontuação", name: "Gato habilidoso", description: "Fazer 10 pontos em uma partida.", emoji: "🐱", test: p => p.record >= 10 },
+    { id: "flying_high", category: "🏆 Pontuação", name: "Voando alto", description: "Fazer 25 pontos em uma partida.", emoji: "🚀", test: p => p.record >= 25 },
+    { id: "unstoppable", category: "🏆 Pontuação", name: "Imparável", description: "Fazer 50 pontos em uma partida.", emoji: "🔥", test: p => p.record >= 50 },
+    { id: "sky_legend", category: "🏆 Pontuação", name: "Lenda dos céus", description: "Fazer 100 pontos em uma partida.", emoji: "👑", test: p => p.record >= 100 },
+
+    // PARTIDAS (5)
+    { id: "first_game", category: "🐱 Partidas", name: "Primeiro jogo", description: "Jogar pela primeira vez.", emoji: "🎮", test: p => p.matches >= 1 },
+    { id: "persistent", category: "🐱 Partidas", name: "Persistente", description: "Jogar 10 partidas.", emoji: "🐾", test: p => p.matches >= 10 },
+    { id: "never_give_up", category: "🐱 Partidas", name: "Não desiste nunca", description: "Jogar 50 partidas.", emoji: "💪", test: p => p.matches >= 50 },
+    { id: "veteran", category: "🐱 Partidas", name: "Veterano", description: "Jogar 100 partidas.", emoji: "🎖️", test: p => p.matches >= 100 },
+    { id: "one_more_try", category: "🐱 Partidas", name: "Mais uma tentativa", description: "Reiniciar uma partida 10 vezes.", emoji: "🔄", test: p => p.restarts >= 10 },
+
+    // SKINS (5)
+    { id: "new_look", category: "💜 Skins", name: "Novo visual", description: "Equipar uma skin pela primeira vez.", emoji: "✨", test: p => p.newSkinEquipped },
+    { id: "collector", category: "💜 Skins", name: "Colecionador", description: "Desbloquear 2 skins.", emoji: "🎨", test: p => unlockedSkinCount() >= 2 },
+    { id: "stylish", category: "💜 Skins", name: "Estiloso", description: "Desbloquear 3 skins.", emoji: "😎", test: p => unlockedSkinCount() >= 3 },
+    { id: "golden_cat", category: "💜 Skins", name: "Gatinho de ouro", description: "Desbloquear a skin dourada.", emoji: "🌟", test: p => p.record >= 100 },
+    { id: "all_styles", category: "💜 Skins", name: "Todos os estilos", description: "Desbloquear todas as skins.", emoji: "🐈", test: p => unlockedSkinCount() === SKINS.length },
+
+    // ESPECIAIS (5)
+    { id: "ten_without_losing", category: "⭐ Especiais", name: "Em sequência", description: "Fazer 10 pontos sem perder.", emoji: "⭐", test: () => score >= 10 },
+    { id: "overcoming", category: "⭐ Especiais", name: "Superação", description: "Bater o próprio recorde.", emoji: "🏅", test: p => p.recordsBroken >= 1 },
+    { id: "early_bird", category: "⭐ Especiais", name: "Madrugador", description: "Jogar 5 partidas no mesmo dia.", emoji: "🌅", test: p => p.dailyMatches >= 5 },
+    { id: "determined", category: "⭐ Especiais", name: "Determinado", description: "Conseguir 20 pontos em uma partida.", emoji: "💜", test: () => score >= 20 },
+    { id: "flippy_master", category: "⭐ Especiais", name: "Mestre Flippy", description: "Conseguir 100 pontos em uma partida.", emoji: "🏆", test: () => score >= 100 },
+
+    // HABILIDADE (5)
+    { id: "perfect_flight", category: "🐾 Habilidade", name: "Voo perfeito", description: "Passar por 5 obstáculos seguidos.", emoji: "🪽", test: p => p.consecutivePipes >= 5 },
+    { id: "fearless", category: "🐾 Habilidade", name: "Sem medo", description: "Passar por 20 obstáculos seguidos.", emoji: "🦁", test: p => p.consecutivePipes >= 20 },
+    { id: "cat_reflexes", category: "🐾 Habilidade", name: "Reflexos felinos", description: "Fazer exatamente 15 pontos em uma partida.", emoji: "⚡", test: () => score === 15 },
+    { id: "almost_impossible", category: "🐾 Habilidade", name: "Quase impossível", description: "Fazer 30 pontos em uma partida.", emoji: "💫", test: () => score >= 30 },
+    { id: "survivor", category: "🐾 Habilidade", name: "Sobrevivente", description: "Sobreviver por 2 minutos.", emoji: "⏱️", test: p => p.bestSurvival >= 120000 },
+
+    // DEDICAÇÃO (5)
+    { id: "faithful_companion", category: "🌙 Dedicação", name: "Companheiro fiel", description: "Jogar em 3 dias diferentes.", emoji: "🌙", test: p => p.daysPlayed.length >= 3 },
+    { id: "always_here", category: "🌙 Dedicação", name: "Sempre por aqui", description: "Jogar em 7 dias diferentes.", emoji: "📅", test: p => p.daysPlayed.length >= 7 },
+    { id: "cat_lover", category: "🌙 Dedicação", name: "Apaixonado por gatos", description: "Completar 200 partidas.", emoji: "💜", test: p => p.matches >= 200 },
+    { id: "marathoner", category: "🌙 Dedicação", name: "Maratonista", description: "Jogar 20 partidas em um dia.", emoji: "🏃", test: p => p.dailyMatches >= 20 },
+    { id: "legendary_veteran", category: "🌙 Dedicação", name: "Veterano lendário", description: "Acumular 500 partidas.", emoji: "🏅", test: p => p.matches >= 500 },
+
+    // SECRETAS (5)
+    { id: "lucky_cat", category: "✨ Secretas", name: "Sorte de gato", description: "Conseguir exatamente 3 pontos.", emoji: "🍀", secret: true, test: () => score === 3 },
+    { id: "magic_number", category: "✨ Secretas", name: "Número mágico", description: "Fazer exatamente 13 pontos.", emoji: "🔮", secret: true, test: () => score === 13 },
+    { id: "perfectionist", category: "✨ Secretas", name: "Perfeccionista", description: "Bater o próprio recorde 5 vezes.", emoji: "💎", secret: true, test: p => p.recordsBroken >= 5 },
+    { id: "complete_collection", category: "✨ Secretas", name: "Coleção completa", description: "Equipar todas as skins pelo menos uma vez.", emoji: "🎭", secret: true, test: p => p.skinsUsed.length === SKINS.length },
+    { id: "king_of_skies", category: "✨ Secretas", name: "Rei dos céus", description: "Alcançar 150 pontos em uma partida.", emoji: "👑", secret: true, test: () => score >= 150 }
 ];
+
+// ========================================
+// DADOS DO JOGADOR
+// ========================================
 
 const player = {
     nickname: "",
     level: 1,
     record: 0,
-    selectedSkin: "classic"
+    selectedSkin: "classic",
+
+    matches: 0,
+    restarts: 0,
+    dailyDate: "",
+    dailyMatches: 0,
+    daysPlayed: [],
+    unlockedAchievements: [],
+    recordsBroken: 0,
+    consecutivePipes: 0,
+    bestSurvival: 0,
+    newSkinEquipped: false,
+    skinsUsed: ["classic"]
 };
 
 let previewSkinId = null;
-
 let state = "ready";
 let score = 0;
 let bird = {};
@@ -177,17 +172,13 @@ let lastTime = 0;
 let elapsed = 0;
 let pipeTimer = 0;
 let toastTimer = null;
-
-// Guarda as conquistas que já foram avisadas nesta sessão.
-let notifiedAchievements = [];
+let recordBeatenThisMatch = false;
 
 const GRAVITY = 0.00085;
 const FLAP_FORCE = -0.32;
 const PIPE_SPEED = 0.13;
 const PIPE_WIDTH = 62;
 const PIPE_GAP = 155;
-
-// Área de colisão ajustada ao tamanho do gato.
 const CAT_HALF_WIDTH = 32;
 const CAT_HALF_HEIGHT = 29;
 
@@ -202,49 +193,75 @@ function loadPlayer() {
         if (saved) {
             const data = JSON.parse(saved);
 
-            player.nickname =
-                typeof data.nickname === "string"
-                    ? data.nickname.slice(0, 20)
-                    : "";
+            player.nickname = typeof data.nickname === "string"
+                ? data.nickname.slice(0, 20) : "";
 
-            player.record =
-                Number.isSafeInteger(data.record) && data.record >= 0
-                    ? data.record
-                    : 0;
+            player.record = Number.isSafeInteger(data.record) && data.record >= 0
+                ? data.record : 0;
 
-            player.selectedSkin =
-                SKINS.some(skin => skin.id === data.selectedSkin)
-                    ? data.selectedSkin
-                    : "classic";
+            player.selectedSkin = SKINS.some(s => s.id === data.selectedSkin)
+                ? data.selectedSkin : "classic";
+
+            player.matches = validNumber(data.matches);
+            player.restarts = validNumber(data.restarts);
+            player.dailyDate = typeof data.dailyDate === "string" ? data.dailyDate : "";
+            player.dailyMatches = validNumber(data.dailyMatches);
+            player.daysPlayed = Array.isArray(data.daysPlayed)
+                ? [...new Set(data.daysPlayed.filter(d => typeof d === "string"))]
+                : [];
+
+            player.unlockedAchievements = Array.isArray(data.unlockedAchievements)
+                ? [...new Set(data.unlockedAchievements.filter(id =>
+                    ACHIEVEMENTS.some(a => a.id === id)
+                ))]
+                : [];
+
+            player.recordsBroken = validNumber(data.recordsBroken);
+            player.consecutivePipes = validNumber(data.consecutivePipes);
+            player.bestSurvival = validNumber(data.bestSurvival);
+            player.newSkinEquipped = data.newSkinEquipped === true;
+
+            player.skinsUsed = Array.isArray(data.skinsUsed)
+                ? [...new Set(data.skinsUsed.filter(id =>
+                    SKINS.some(s => s.id === id)
+                ))]
+                : ["classic"];
         }
     } catch (error) {
         console.warn("Não foi possível carregar o perfil.", error);
     }
 
-    const selectedSkin = SKINS.find(
-        skin => skin.id === player.selectedSkin
-    );
+    const selectedSkin = SKINS.find(s => s.id === player.selectedSkin);
 
     if (!selectedSkin || player.record < selectedSkin.points) {
         player.selectedSkin = "classic";
     }
 
-    updateProgress();
+    if (!player.skinsUsed.includes("classic")) {
+        player.skinsUsed.push("classic");
+    }
+
     nicknameInput.value = player.nickname;
+    updateProgress();
+    checkAllAchievements();
+}
+
+function validNumber(value) {
+    return Number.isSafeInteger(value) && value >= 0 ? value : 0;
 }
 
 function savePlayer() {
     try {
-        localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify(player)
-        );
-
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(player));
         return true;
     } catch (error) {
-        console.warn("Não foi possível salvar o perfil.", error);
+        console.warn("Não foi possível salvar os dados.", error);
         return false;
     }
+}
+
+function unlockedSkinCount() {
+    return SKINS.filter(skin => player.record >= skin.points).length;
 }
 
 function updateProgress() {
@@ -266,22 +283,18 @@ function saveNickname() {
         return;
     }
 
-    player.nickname = nickname;
-    nicknameInput.value = nickname;
+    player.nickname = nickname.slice(0, 20);
+    nicknameInput.value = player.nickname;
 
-    if (savePlayer()) {
-        showToast("Nickname salvo com sucesso! 💜");
-    } else {
-        showToast("Não foi possível salvar os dados.");
-    }
+    showToast(savePlayer()
+        ? "Nickname salvo com sucesso! 💜"
+        : "Não foi possível salvar os dados.");
 }
 
 saveNicknameButton.addEventListener("click", saveNickname);
 
-nicknameInput.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-        saveNickname();
-    }
+nicknameInput.addEventListener("keydown", event => {
+    if (event.key === "Enter") saveNickname();
 });
 
 // ========================================
@@ -295,24 +308,18 @@ function openSkins() {
 
     previewSkinId = null;
     skinPreview.hidden = true;
-
     renderSkins();
 }
 
 function closeSkins() {
     skinsPanel.hidden = true;
     menu.hidden = false;
-
     previewSkinId = null;
     skinPreview.hidden = true;
 }
 
 skinsButton.addEventListener("click", openSkins);
 closeSkinsButton.addEventListener("click", closeSkins);
-
-// ========================================
-// LISTA DE SKINS
-// ========================================
 
 function renderSkins() {
     skinSelector.innerHTML = "";
@@ -322,17 +329,11 @@ function renderSkins() {
         const selected = player.selectedSkin === skin.id;
 
         const button = document.createElement("button");
-
         button.type = "button";
         button.className = "skin-option";
 
-        if (selected) {
-            button.classList.add("selected");
-        }
-
-        if (!unlocked) {
-            button.classList.add("locked");
-        }
+        if (selected) button.classList.add("selected");
+        if (!unlocked) button.classList.add("locked");
 
         const emoji = document.createElement("span");
         emoji.className = "skin-emoji";
@@ -345,20 +346,12 @@ function renderSkins() {
         const status = document.createElement("small");
         status.className = "skin-status";
 
-        if (!unlocked) {
-            status.textContent = `${skin.points} pontos`;
-        } else if (selected) {
-            status.textContent = "✓ Equipada";
-        } else {
-            status.textContent = "Disponível";
-        }
+        status.textContent = !unlocked
+            ? `${skin.points} pontos`
+            : selected ? "✓ Equipada" : "Disponível";
 
         button.append(emoji, name, status);
-
-        button.addEventListener("click", () => {
-            showSkinPreview(skin.id);
-        });
-
+        button.addEventListener("click", () => showSkinPreview(skin.id));
         skinSelector.appendChild(button);
     });
 }
@@ -369,7 +362,6 @@ function renderSkins() {
 
 function showSkinPreview(skinId) {
     const skin = SKINS.find(item => item.id === skinId);
-
     if (!skin) return;
 
     previewSkinId = skinId;
@@ -380,27 +372,14 @@ function showSkinPreview(skinId) {
     skinPreview.hidden = false;
     previewName.textContent = `Gato ${skin.name}`;
 
-    previewCtx.clearRect(
-        0,
-        0,
-        previewCanvas.width,
-        previewCanvas.height
-    );
+    previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
 
-    const gradient = previewCtx.createLinearGradient(
-        0, 0, 0, previewCanvas.height
-    );
-
+    const gradient = previewCtx.createLinearGradient(0, 0, 0, previewCanvas.height);
     gradient.addColorStop(0, "#3a2257");
     gradient.addColorStop(1, "#170e25");
 
     previewCtx.fillStyle = gradient;
-    previewCtx.fillRect(
-        0,
-        0,
-        previewCanvas.width,
-        previewCanvas.height
-    );
+    previewCtx.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
 
     previewCtx.fillStyle = "#e5ceff";
 
@@ -413,39 +392,24 @@ function showSkinPreview(skinId) {
         previewCtx.fill();
     }
 
-    drawCatCharacter(
-        previewCtx,
-        120,
-        91,
-        skin,
-        1.05,
-        -0.08
-    );
+    drawCatCharacter(previewCtx, 120, 91, skin, 1.05, -0.08);
 
     if (!unlocked) {
-        const remaining = skin.points - player.record;
-
         previewDescription.textContent =
-            `Essa skin está bloqueada. Faltam ${remaining} ponto(s) para desbloquear.`;
-
+            `Essa skin está bloqueada. Faltam ${skin.points - player.record} ponto(s) para desbloquear.`;
         equipSkinButton.textContent = "SKIN BLOQUEADA";
         equipSkinButton.disabled = true;
     } else if (selected && skin.id !== "classic") {
-        previewDescription.textContent =
-            "Essa é a skin que você está usando atualmente.";
-
+        previewDescription.textContent = "Essa é a skin que você está usando atualmente.";
         equipSkinButton.textContent = "DESEQUIPAR";
         equipSkinButton.disabled = false;
     } else if (selected) {
-        previewDescription.textContent =
-            "Essa é a aparência clássica do seu gatinho.";
-
+        previewDescription.textContent = "Essa é a aparência clássica do seu gatinho.";
         equipSkinButton.textContent = "SKIN PADRÃO";
         equipSkinButton.disabled = true;
     } else {
         previewDescription.textContent =
             `Skin disponível! Desbloqueada com ${skin.points} pontos.`;
-
         equipSkinButton.textContent = "EQUIPAR";
         equipSkinButton.disabled = false;
     }
@@ -453,34 +417,31 @@ function showSkinPreview(skinId) {
     renderSkins();
 }
 
-// ========================================
-// EQUIPAR E DESEQUIPAR
-// ========================================
-
 equipSkinButton.addEventListener("click", () => {
     if (!previewSkinId) return;
 
-    const skin = SKINS.find(
-        item => item.id === previewSkinId
-    );
-
+    const skin = SKINS.find(item => item.id === previewSkinId);
     if (!skin || player.record < skin.points) return;
 
-    if (
-        player.selectedSkin === skin.id &&
-        skin.id !== "classic"
-    ) {
+    if (player.selectedSkin === skin.id && skin.id !== "classic") {
         player.selectedSkin = "classic";
-
-        savePlayer();
+        player.skinsUsed.push("classic");
         showToast("Skin desequipada! Voltou ao clássico. 🐱");
     } else {
         player.selectedSkin = skin.id;
+        player.skinsUsed.push(skin.id);
 
-        savePlayer();
+        if (skin.id !== "classic") {
+            player.newSkinEquipped = true;
+        }
+
         showToast(`${skin.name} equipada! 💜`);
     }
 
+    player.skinsUsed = [...new Set(player.skinsUsed)];
+
+    savePlayer();
+    checkAllAchievements();
     showSkinPreview(previewSkinId);
     draw();
 });
@@ -493,7 +454,6 @@ function openAchievements() {
     menu.hidden = true;
     skinsPanel.hidden = true;
     achievementsPanel.hidden = false;
-
     renderAchievements();
 }
 
@@ -512,68 +472,76 @@ function renderAchievements() {
 
     let unlockedCount = 0;
 
-    ACHIEVEMENTS.forEach(achievement => {
-        const unlocked = player.record >= achievement.points;
+    const categories = [...new Set(ACHIEVEMENTS.map(a => a.category))];
 
-        if (unlocked) {
-            unlockedCount++;
-        }
+    categories.forEach(category => {
+        const heading = document.createElement("h3");
+        heading.textContent = category;
+        heading.style.cssText =
+            "font-size:14px;margin:12px 0 2px;color:#d9baff;font-weight:900;";
+        achievementList.appendChild(heading);
 
-        const item = document.createElement("div");
-        item.className = "achievement-item";
+        ACHIEVEMENTS.filter(a => a.category === category).forEach(achievement => {
+            const unlocked = player.unlockedAchievements.includes(achievement.id);
 
-        if (unlocked) {
-            item.classList.add("unlocked");
-        }
+            if (unlocked) unlockedCount++;
 
-        const icon = document.createElement("div");
-        icon.className = "achievement-icon";
-        icon.textContent = unlocked ? achievement.emoji : "🔒";
+            const hiddenSecret = achievement.secret && !unlocked;
 
-        const info = document.createElement("div");
-        info.className = "achievement-info";
+            const item = document.createElement("div");
+            item.className = "achievement-item";
 
-        const name = document.createElement("h3");
-        name.textContent = achievement.name;
+            if (unlocked) item.classList.add("unlocked");
 
-        const description = document.createElement("p");
-        description.textContent = achievement.description;
+            const icon = document.createElement("div");
+            icon.className = "achievement-icon";
+            icon.textContent = hiddenSecret ? "❔" : unlocked ? achievement.emoji : "🔒";
 
-        info.append(name, description);
+            const info = document.createElement("div");
+            info.className = "achievement-info";
 
-        const status = document.createElement("div");
-        status.className = "achievement-status";
-        status.textContent = unlocked ? "DESBLOQUEADA" : `${achievement.points} PTS`;
+            const name = document.createElement("h3");
+            name.textContent = hiddenSecret ? "???" : achievement.name;
 
-        item.append(icon, info, status);
+            const description = document.createElement("p");
+            description.textContent = hiddenSecret
+                ? "Conquista secreta. Descubra como desbloquear!"
+                : achievement.description;
 
-        achievementList.appendChild(item);
+            info.append(name, description);
+
+            const status = document.createElement("div");
+            status.className = "achievement-status";
+            status.textContent = unlocked ? "DESBLOQUEADA" : "BLOQUEADA";
+
+            item.append(icon, info, status);
+            achievementList.appendChild(item);
+        });
     });
 
-    achievementCount.textContent =
-        `${unlockedCount}/${ACHIEVEMENTS.length}`;
+    achievementCount.textContent = `${unlockedCount}/${ACHIEVEMENTS.length}`;
 
-    const percentage =
-        (unlockedCount / ACHIEVEMENTS.length) * 100;
-
+    const percentage = (unlockedCount / ACHIEVEMENTS.length) * 100;
     achievementProgressFill.style.width = `${percentage}%`;
 }
 
-function checkAchievements(previousRecord, newRecord) {
+function unlockAchievement(achievement) {
+    if (player.unlockedAchievements.includes(achievement.id)) return;
+
+    player.unlockedAchievements.push(achievement.id);
+    savePlayer();
+
+    showToast(`🏆 Conquista desbloqueada: ${achievement.name}!`);
+    renderAchievements();
+}
+
+function checkAllAchievements() {
     ACHIEVEMENTS.forEach(achievement => {
-        const reachedNow =
-            previousRecord < achievement.points &&
-            newRecord >= achievement.points;
-
         if (
-            reachedNow &&
-            !notifiedAchievements.includes(achievement.id)
+            !player.unlockedAchievements.includes(achievement.id) &&
+            achievement.test(player)
         ) {
-            notifiedAchievements.push(achievement.id);
-
-            showToast(
-                `🏆 Conquista desbloqueada: ${achievement.name}!`
-            );
+            unlockAchievement(achievement);
         }
     });
 
@@ -609,7 +577,7 @@ function showGameMessage(title, description, buttonText) {
     button.className = "play-button";
     button.textContent = buttonText;
 
-    button.addEventListener("click", (event) => {
+    button.addEventListener("click", event => {
         event.stopPropagation();
         startGame();
     });
@@ -631,7 +599,7 @@ function openGame() {
         return;
     }
 
-    player.nickname = nickname;
+    player.nickname = nickname.slice(0, 20);
     savePlayer();
 
     menu.hidden = true;
@@ -658,6 +626,38 @@ playButton.addEventListener("click", openGame);
 backButton.addEventListener("click", backToMenu);
 
 // ========================================
+// CONTROLE DE PARTIDAS E DIAS
+// ========================================
+
+function registerMatch() {
+    const today = new Date().toLocaleDateString("en-CA");
+
+    player.matches++;
+
+    if (player.dailyDate !== today) {
+        player.dailyDate = today;
+        player.dailyMatches = 0;
+    }
+
+    player.dailyMatches++;
+
+    if (!player.daysPlayed.includes(today)) {
+        player.daysPlayed.push(today);
+    }
+
+    savePlayer();
+    checkAllAchievements();
+}
+
+function registerRecord() {
+    if (recordBeatenThisMatch) return;
+
+    recordBeatenThisMatch = true;
+    player.recordsBroken++;
+    checkAllAchievements();
+}
+
+// ========================================
 // PREPARAÇÃO DA PARTIDA
 // ========================================
 
@@ -668,6 +668,7 @@ function resetGame() {
     elapsed = 0;
     pipeTimer = 0;
     pipes = [];
+    player.consecutivePipes = 0;
 
     bird = {
         x: canvas.width * 0.28,
@@ -691,12 +692,23 @@ function resetGame() {
 function startGame() {
     if (state === "running") return;
 
+    if (player.matches > 0 || player.matches === 0) {
+        if (player.matches > 0 || player.record >= 0) {
+            // Conta reinícios somente quando já houve uma partida anterior.
+            if (player.matches > 0 && state === "over") {
+                player.restarts++;
+            }
+        }
+    }
+
     stopGame();
 
     score = 0;
     elapsed = 0;
     pipeTimer = 0;
     pipes = [];
+    player.consecutivePipes = 0;
+    recordBeatenThisMatch = false;
 
     bird = {
         x: canvas.width * 0.28,
@@ -710,6 +722,8 @@ function startGame() {
     state = "running";
     lastTime = 0;
     gameMessage.hidden = true;
+
+    registerMatch();
 
     animationId = requestAnimationFrame(gameLoop);
 }
@@ -725,7 +739,6 @@ function stopGame() {
 
 function flap() {
     if (state !== "running") return;
-
     bird.velocity = FLAP_FORCE;
 }
 
@@ -733,7 +746,7 @@ function flap() {
 // CONTROLES
 // ========================================
 
-canvas.addEventListener("pointerdown", (event) => {
+canvas.addEventListener("pointerdown", event => {
     event.preventDefault();
 
     if (state === "ready") {
@@ -745,7 +758,7 @@ canvas.addEventListener("pointerdown", (event) => {
     }
 });
 
-document.addEventListener("keydown", (event) => {
+document.addEventListener("keydown", event => {
     if (
         event.code !== "Space" ||
         menu.hidden === false ||
@@ -777,8 +790,7 @@ function createPipe() {
     const margin = 65;
     const available = canvas.height - PIPE_GAP - margin * 2;
 
-    const topHeight =
-        margin + Math.random() * Math.max(1, available);
+    const topHeight = margin + Math.random() * Math.max(1, available);
 
     pipes.push({
         x: canvas.width + 10,
@@ -798,10 +810,7 @@ function update(delta) {
     bird.velocity += GRAVITY * delta;
     bird.y += bird.velocity * delta;
 
-    bird.rotation = Math.min(
-        0.8,
-        Math.max(-0.45, bird.velocity * 1.5)
-    );
+    bird.rotation = Math.min(0.8, Math.max(-0.45, bird.velocity * 1.5));
 
     if (pipeTimer >= 1550) {
         createPipe();
@@ -811,31 +820,25 @@ function update(delta) {
     for (const pipe of pipes) {
         pipe.x -= PIPE_SPEED * delta;
 
-        if (
-            !pipe.passed &&
-            pipe.x + PIPE_WIDTH < bird.x
-        ) {
+        if (!pipe.passed && pipe.x + PIPE_WIDTH < bird.x) {
             pipe.passed = true;
             score++;
+            player.consecutivePipes++;
 
             scoreElement.textContent = score;
 
             if (score > player.record) {
-                const previousRecord = player.record;
-
+                registerRecord();
                 player.record = score;
-
                 updateProgress();
                 savePlayer();
-
-                checkAchievements(previousRecord, player.record);
             }
+
+            checkAllAchievements();
         }
     }
 
-    pipes = pipes.filter(
-        pipe => pipe.x + PIPE_WIDTH > -10
-    );
+    pipes = pipes.filter(pipe => pipe.x + PIPE_WIDTH > -10);
 
     if (
         bird.y - CAT_HALF_HEIGHT < 0 ||
@@ -866,10 +869,7 @@ function update(delta) {
 // ========================================
 
 function drawBackground() {
-    const gradient = ctx.createLinearGradient(
-        0, 0, 0, canvas.height
-    );
-
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
     gradient.addColorStop(0, "#281747");
     gradient.addColorStop(1, "#100b1c");
 
@@ -880,9 +880,7 @@ function drawBackground() {
         const x = (i * 97 + 25) % canvas.width;
         const y = (i * 67 + 18) % canvas.height;
 
-        ctx.globalAlpha =
-            0.35 + Math.sin(elapsed / 350 + i) * 0.2;
-
+        ctx.globalAlpha = 0.35 + Math.sin(elapsed / 350 + i) * 0.2;
         ctx.fillStyle = "#e1caff";
         ctx.beginPath();
         ctx.arc(x, y, 1.5, 0, Math.PI * 2);
@@ -904,12 +902,10 @@ function drawBackground() {
 
 function drawCloud(x, y, scale) {
     ctx.save();
-
     ctx.translate(x, y);
     ctx.scale(scale, scale);
 
     ctx.fillStyle = "#7652a0";
-
     ctx.beginPath();
     ctx.arc(-15, 0, 12, 0, Math.PI * 2);
     ctx.arc(0, -8, 16, 0, Math.PI * 2);
@@ -937,33 +933,15 @@ function drawPipe(pipe) {
 
     ctx.fillStyle = "#7537b8";
     ctx.fillRect(pipe.x, bottomY + 12, PIPE_WIDTH, bottomHeight);
-
-    ctx.strokeRect(
-        pipe.x,
-        bottomY + 12,
-        PIPE_WIDTH,
-        bottomHeight
-    );
+    ctx.strokeRect(pipe.x, bottomY + 12, PIPE_WIDTH, bottomHeight);
 
     ctx.fillStyle = "#a66bff";
     ctx.fillRect(pipe.x - 5, bottomY, PIPE_WIDTH + 10, 16);
-
-    ctx.strokeRect(
-        pipe.x - 5,
-        bottomY,
-        PIPE_WIDTH + 10,
-        16
-    );
+    ctx.strokeRect(pipe.x - 5, bottomY, PIPE_WIDTH + 10, 16);
 
     ctx.fillStyle = "#d6b8ff";
     ctx.fillRect(pipe.x + 9, 0, 4, Math.max(0, pipe.top - 20));
-
-    ctx.fillRect(
-        pipe.x + 9,
-        bottomY + 20,
-        4,
-        Math.max(0, bottomHeight - 20)
-    );
+    ctx.fillRect(pipe.x + 9, bottomY + 20, 4, Math.max(0, bottomHeight - 20));
 }
 
 // ========================================
@@ -972,20 +950,16 @@ function drawPipe(pipe) {
 
 function drawCatCharacter(target, x, y, skin, scale = 1, rotation = 0) {
     target.save();
-
     target.translate(x, y);
     target.rotate(rotation);
-
-    // O gato continua olhando para a direita.
     target.scale(-scale, scale);
 
     target.lineJoin = "round";
     target.lineCap = "round";
 
-    // CAUDA MAIS CURTA
+    // Cauda
     target.lineWidth = 7;
     target.strokeStyle = skin.dark;
-
     target.beginPath();
     target.moveTo(27, 5);
     target.bezierCurveTo(39, 1, 43, -10, 43, -20);
@@ -994,56 +968,47 @@ function drawCatCharacter(target, x, y, skin, scale = 1, rotation = 0) {
 
     target.lineWidth = 4.5;
     target.strokeStyle = skin.body;
-
     target.beginPath();
     target.moveTo(27, 5);
     target.bezierCurveTo(39, 1, 43, -10, 43, -20);
     target.bezierCurveTo(43, -29, 50, -34, 54, -38);
     target.stroke();
 
-    // PONTA DA CAUDA
     target.fillStyle = skin.white;
     target.beginPath();
     target.arc(54, -38, 3, 0, Math.PI * 2);
     target.fill();
 
-    // CORPO MAIS FINO
+    // Corpo
     target.fillStyle = skin.body;
     target.strokeStyle = skin.dark;
     target.lineWidth = 2.5;
-
     target.beginPath();
     target.ellipse(12, 8, 27, 19, -0.12, 0, Math.PI * 2);
     target.fill();
     target.stroke();
 
-    // BARRIGA MENOR
     target.fillStyle = skin.white;
-
     target.beginPath();
     target.ellipse(14, 19, 15, 5, -0.12, 0, Math.PI * 2);
     target.fill();
 
-    // LISTRAS DO CORPO
+    // Listras
     target.strokeStyle = skin.stripe;
     target.lineWidth = 3;
-
     target.beginPath();
     target.moveTo(-4, -7);
     target.quadraticCurveTo(1, 1, -4, 7);
-
     target.moveTo(13, -10);
     target.quadraticCurveTo(18, -2, 13, 4);
-
     target.moveTo(27, -3);
     target.quadraticCurveTo(31, 4, 27, 8);
     target.stroke();
 
-    // PATAS TRASEIRAS MENORES
+    // Patas traseiras
     target.fillStyle = skin.body;
     target.strokeStyle = skin.dark;
     target.lineWidth = 2.5;
-
     target.beginPath();
     target.ellipse(29, 20, 8, 10, -0.5, 0, Math.PI * 2);
     target.fill();
@@ -1054,17 +1019,14 @@ function drawCatCharacter(target, x, y, skin, scale = 1, rotation = 0) {
     target.fill();
     target.stroke();
 
-    // PONTA BRANCA DA PATA
     target.fillStyle = skin.white;
-
     target.beginPath();
     target.ellipse(38, 29, 4, 3, -0.5, 0, Math.PI * 2);
     target.fill();
 
-    // PATA DIANTEIRA
+    // Pata dianteira
     target.fillStyle = skin.body;
     target.strokeStyle = skin.dark;
-
     target.beginPath();
     target.moveTo(-15, 5);
     target.quadraticCurveTo(-31, 9, -29, 20);
@@ -1074,37 +1036,31 @@ function drawCatCharacter(target, x, y, skin, scale = 1, rotation = 0) {
     target.fill();
     target.stroke();
 
-    // PATINHA BRANCA
     target.fillStyle = skin.white;
-
     target.beginPath();
     target.ellipse(-23, 20, 7, 5, 0.3, 0, Math.PI * 2);
     target.fill();
 
     target.strokeStyle = skin.dark;
     target.lineWidth = 1.2;
-
     target.beginPath();
     target.moveTo(-26, 18);
     target.quadraticCurveTo(-29, 22, -25, 24);
-
     target.moveTo(-21, 18);
     target.quadraticCurveTo(-24, 23, -20, 25);
     target.stroke();
 
-    // CABEÇA MAIS FINA
+    // Cabeça
     target.fillStyle = skin.body;
     target.strokeStyle = skin.dark;
     target.lineWidth = 2.8;
-
     target.beginPath();
     target.ellipse(-15, -17, 23, 25, -0.08, 0, Math.PI * 2);
     target.fill();
     target.stroke();
 
-    // ORELHA ESQUERDA
+    // Orelhas
     target.fillStyle = skin.body;
-
     target.beginPath();
     target.moveTo(-35, -34);
     target.lineTo(-34, -53);
@@ -1114,7 +1070,6 @@ function drawCatCharacter(target, x, y, skin, scale = 1, rotation = 0) {
     target.fill();
     target.stroke();
 
-    // ORELHA DIREITA
     target.beginPath();
     target.moveTo(-13, -37);
     target.lineTo(-5, -55);
@@ -1124,9 +1079,8 @@ function drawCatCharacter(target, x, y, skin, scale = 1, rotation = 0) {
     target.fill();
     target.stroke();
 
-    // INTERIOR DAS ORELHAS
+    // Interior das orelhas
     target.fillStyle = skin.cheek;
-
     target.beginPath();
     target.moveTo(-31, -39);
     target.lineTo(-31, -50);
@@ -1141,21 +1095,18 @@ function drawCatCharacter(target, x, y, skin, scale = 1, rotation = 0) {
     target.closePath();
     target.fill();
 
-    // LISTRAS DA TESTA
+    // Listras da testa
     target.strokeStyle = skin.stripe;
     target.lineWidth = 3.5;
-
     target.beginPath();
     target.moveTo(-18, -36);
     target.lineTo(-15, -30);
-
     target.moveTo(-5, -36);
     target.lineTo(-2, -30);
     target.stroke();
 
-    // MANCHA BRANCA MAIS BAIXA
+    // Mancha branca
     target.fillStyle = skin.white;
-
     target.beginPath();
     target.moveTo(-37, -13);
     target.bezierCurveTo(-40, -5, -34, 5, -25, 7);
@@ -1164,32 +1115,27 @@ function drawCatCharacter(target, x, y, skin, scale = 1, rotation = 0) {
     target.bezierCurveTo(-26, -18, -33, -17, -37, -13);
     target.fill();
 
-    // OLHOS
+    // Olhos
     target.fillStyle = skin.eye;
-
     target.beginPath();
     target.ellipse(-28, -22, 6.5, 8, -0.1, 0, Math.PI * 2);
     target.ellipse(-10, -22, 6.5, 8, -0.1, 0, Math.PI * 2);
     target.fill();
 
-    // BRILHO DOS OLHOS
     target.fillStyle = "#ffffff";
-
     target.beginPath();
     target.arc(-30, -25, 2.3, 0, Math.PI * 2);
     target.arc(-12, -25, 2.3, 0, Math.PI * 2);
     target.fill();
 
-    // FOCINHO
+    // Focinho
     target.fillStyle = skin.white;
-
     target.beginPath();
     target.ellipse(-19, -5, 8, 5, 0, 0, Math.PI * 2);
     target.fill();
 
-    // NARIZ
+    // Nariz
     target.fillStyle = skin.nose;
-
     target.beginPath();
     target.moveTo(-22, -9);
     target.quadraticCurveTo(-19, -12, -16, -9);
@@ -1197,66 +1143,56 @@ function drawCatCharacter(target, x, y, skin, scale = 1, rotation = 0) {
     target.closePath();
     target.fill();
 
-    // BOCA
+    // Boca
     target.strokeStyle = skin.dark;
     target.lineWidth = 1.5;
-
     target.beginPath();
     target.moveTo(-19, -5);
     target.lineTo(-19, -2);
     target.quadraticCurveTo(-23, 1, -25, -2);
-
     target.moveTo(-19, -2);
     target.quadraticCurveTo(-15, 1, -12, -2);
     target.stroke();
 
-    // LÍNGUA
+    // Língua
     target.fillStyle = "#ff6f91";
-
     target.beginPath();
     target.ellipse(-19, 1, 2.3, 3, 0, 0, Math.PI * 2);
     target.fill();
 
-    // BOCHECHAS
+    // Bochechas
     target.globalAlpha = 0.8;
     target.fillStyle = skin.cheek;
-
     target.beginPath();
     target.ellipse(-34, -5, 3, 2.3, 0, 0, Math.PI * 2);
     target.ellipse(-5, -5, 3, 2.3, 0, 0, Math.PI * 2);
     target.fill();
-
     target.globalAlpha = 1;
 
-    // BIGODES
+    // Bigodes
     target.strokeStyle = skin.dark;
     target.lineWidth = 1;
-
     target.beginPath();
     target.moveTo(-34, -3);
     target.lineTo(-41, -5);
-
     target.moveTo(-34, 1);
     target.lineTo(-40, 3);
-
     target.moveTo(-5, -3);
     target.lineTo(1, -5);
     target.stroke();
 
-    // DETALHES DA SKIN DOURADA
+    // Detalhes da skin dourada
     if (skin.id === "gold") {
         target.fillStyle = "#fff4b0";
-
         target.beginPath();
         target.arc(25, -24, 2, 0, Math.PI * 2);
         target.arc(-42, -39, 1.7, 0, Math.PI * 2);
         target.fill();
     }
 
-    // DETALHE DA SKIN FLAMEJANTE
+    // Detalhe da skin flamejante
     if (skin.id === "flame") {
         target.fillStyle = "#ffd166";
-
         target.beginPath();
         target.moveTo(25, -3);
         target.quadraticCurveTo(35, -12, 30, -20);
@@ -1268,23 +1204,12 @@ function drawCatCharacter(target, x, y, skin, scale = 1, rotation = 0) {
 }
 
 function drawCat() {
-    const skin = SKINS.find(
-        item => item.id === player.selectedSkin
-    ) || SKINS[0];
-
-    drawCatCharacter(
-        ctx,
-        bird.x,
-        bird.y,
-        skin,
-        0.78,
-        bird.rotation
-    );
+    const skin = SKINS.find(item => item.id === player.selectedSkin) || SKINS[0];
+    drawCatCharacter(ctx, bird.x, bird.y, skin, 0.78, bird.rotation);
 }
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     drawBackground();
 
     for (const pipe of pipes) {
@@ -1301,9 +1226,7 @@ function draw() {
 function gameLoop(timestamp) {
     if (state !== "running") return;
 
-    if (lastTime === 0) {
-        lastTime = timestamp;
-    }
+    if (lastTime === 0) lastTime = timestamp;
 
     const delta = Math.min(timestamp - lastTime, 32);
     lastTime = timestamp;
@@ -1326,15 +1249,16 @@ function endGame() {
     state = "over";
     stopGame();
 
-    if (score > player.record) {
-        const previousRecord = player.record;
-        player.record = score;
+    player.bestSurvival = Math.max(player.bestSurvival, elapsed);
 
-        checkAchievements(previousRecord, player.record);
+    if (score > player.record) {
+        registerRecord();
+        player.record = score;
     }
 
-    updateProgress();
     savePlayer();
+    updateProgress();
+    checkAllAchievements();
 
     draw();
 
