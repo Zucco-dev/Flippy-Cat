@@ -132,7 +132,7 @@ const ACHIEVEMENTS = [
     { id: "legendary_veteran", category: "🌙 Dedicação", name: "Veterano lendário", description: "Acumular 500 partidas.", emoji: "🏅", test: p => p.matches >= 500 },
 
     // SECRETAS (5)
-    { id: "lucky_cat", category: "✨ Secretas", name: "Sorte de gato", description: "Conseguir exatamente 3 pontos.", emoji: "🍀", secret: true, test: () => score === 3 },
+    { id: "lucky_cat", category: "✨ Secretas", name: "Sorte de gato", description: "Conseguir exatamente 3 pontos.", emoji: "🍀", secret: true, test: () => false },
     { id: "magic_number", category: "✨ Secretas", name: "Número mágico", description: "Fazer exatamente 13 pontos.", emoji: "🔮", secret: true, test: () => score === 13 },
     { id: "perfectionist", category: "✨ Secretas", name: "Perfeccionista", description: "Bater o próprio recorde 5 vezes.", emoji: "💎", secret: true, test: p => p.recordsBroken >= 5 },
     { id: "complete_collection", category: "✨ Secretas", name: "Coleção completa", description: "Equipar todas as skins pelo menos uma vez.", emoji: "🎭", secret: true, test: p => p.skinsUsed.length === SKINS.length },
@@ -826,6 +826,17 @@ function update(delta) {
             player.consecutivePipes++;
 
             scoreElement.textContent = score;
+
+            // Sorte de gato: desbloqueia somente ao alcançar exatamente 3 pontos.
+            if (score === 3) {
+                const luckyAchievement = ACHIEVEMENTS.find(
+                    achievement => achievement.id === "lucky_cat"
+                );
+
+                if (luckyAchievement) {
+                    unlockAchievement(luckyAchievement);
+                }
+            }
 
             if (score > player.record) {
                 registerRecord();
