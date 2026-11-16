@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -20,7 +21,9 @@
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", () => {
                 navigator.serviceWorker.register("/service-worker.js")
-                    .catch(error => console.error(error));
+                    .catch(error => {
+                        console.error("Erro ao registrar Service Worker:", error);
+                    });
             });
         }
     </script>
@@ -47,7 +50,6 @@
                     placeholder="Digite seu nickname"
                     autocomplete="nickname"
                 >
-
                 <button id="saveNickname" class="save-button">
                     Salvar
                 </button>
@@ -67,77 +69,11 @@
                 </div>
             </div>
 
-            <button id="skinsButton" class="skins-button">
-                🐾 SKINS
-            </button>
-
-            <button id="achievementsButton" class="achievements-button">
-                🏆 CONQUISTAS
-            </button>
-
             <button id="playButton" class="play-button">
                 ▶ JOGAR
             </button>
 
             <p class="hint">Prepare suas patinhas para a aventura!</p>
-        </section>
-
-        <!-- PAINEL DE SKINS -->
-        <section class="skins-panel" id="skinsPanel" hidden>
-            <div class="skins-header">
-                <h2>🐾 ESCOLHA SEU GATINHO</h2>
-                <button id="closeSkins" class="close-button">✕</button>
-            </div>
-
-            <p>Escolha uma skin para conhecer melhor!</p>
-
-            <div class="skin-selector" id="skinSelector"></div>
-
-            <div class="skin-preview-panel" id="skinPreview" hidden>
-                <h3 id="previewName">Gato Clássico</h3>
-
-                <canvas
-                    id="previewCanvas"
-                    width="240"
-                    height="170"
-                    aria-label="Prévia do personagem"
-                ></canvas>
-
-                <p id="previewDescription"></p>
-
-                <button
-                    id="equipSkinButton"
-                    class="equip-button"
-                    type="button"
-                >
-                    EQUIPAR
-                </button>
-            </div>
-        </section>
-
-        <!-- PAINEL DE CONQUISTAS -->
-        <section class="achievements-panel" id="achievementsPanel" hidden>
-            <div class="achievements-header">
-                <h2>🏆 CONQUISTAS</h2>
-                <button id="closeAchievements" class="close-button">✕</button>
-            </div>
-
-            <p class="achievements-description">
-                Complete desafios e conquiste medalhas!
-            </p>
-
-            <div class="achievement-progress">
-                <div class="achievement-progress-text">
-                    <span>Seu progresso</span>
-                    <strong id="achievementCount">0/5</strong>
-                </div>
-
-                <div class="achievement-progress-bar">
-                    <div id="achievementProgressFill"></div>
-                </div>
-            </div>
-
-            <div class="achievement-list" id="achievementList"></div>
         </section>
 
         <section class="game-panel" id="gameScreen" hidden>
@@ -155,13 +91,12 @@
                 id="gameCanvas"
                 width="360"
                 height="520"
-                aria-label="Jogo Flippy Cat"
+                aria-label="Jogo Flippy Cat. Clique ou pressione espaço para fazer o gato voar."
             ></canvas>
 
             <div class="game-message" id="gameMessage">
                 <h2>Pronto para voar?</h2>
                 <p>Clique no jogo ou pressione ESPAÇO!</p>
-
                 <button id="startButton" class="play-button">
                     COMEÇAR
                 </button>
