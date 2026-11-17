@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
 
 :root {
@@ -537,8 +538,10 @@ button {
 /* BOTÃO JOGAR */
 
 .play-button {
+    display: block;
     width: 100%;
     padding: 16px;
+    margin: 0 0 17px;
     border: none;
     border-radius: 14px;
     background: linear-gradient(135deg, #b47aff, #8238e8);
@@ -561,6 +564,92 @@ button {
     transform: translateY(3px);
     box-shadow: 0 2px 0 var(--purple-dark);
 }
+
+/* BOTÃO DE CENÁRIOS */
+
+#scenariosButton {
+    display: block;
+    width: 100%;
+    margin: 0 0 13px;
+}
+
+/* RECORDE E MÚSICA */
+
+/* A COLUNA NÃO TEM BORDA, FUNDO OU QUADRADO */
+.hud-record-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 5px;
+    padding: 0 !important;
+    margin: 0;
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+/* SOMENTE O RECORDE TEM QUADRADO */
+.hud-record {
+    min-width: 65px;
+    padding: 8px 10px;
+    text-align: center;
+    background: #100b1c;
+    border: 1px solid #684493;
+    border-radius: 12px;
+}
+
+.hud-record strong {
+    display: block;
+    color: #ffe2a1;
+    font-size: 21px;
+    line-height: 1.2;
+}
+
+.hud-record span {
+    color: #b8a8ce;
+    font-size: 9px;
+    font-weight: 900;
+}
+
+/* MÚSICA TOTALMENTE FORA DO QUADRADO */
+.hud-music-slot {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 25px;
+    padding: 0;
+    margin: 0;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.hud-music-slot button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto !important;
+    height: auto !important;
+    min-width: 0;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: white;
+    font-size: 19px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.hud-music-slot button:hover {
+    transform: scale(1.12);
+}
+
+/* DICAS */
 
 .hint,
 .game-hint {
@@ -633,6 +722,7 @@ button {
 .game-message .play-button {
     font-size: 15px;
     padding: 13px;
+    margin: 0;
 }
 
 .toast {
@@ -719,6 +809,30 @@ footer {
         width: 38px;
         height: 38px;
         font-size: 20px;
+    }
+}
+
+@media (max-width: 380px) {
+    .menu-hud {
+        gap: 5px;
+    }
+
+    .hud-nickname {
+        font-size: 14px;
+    }
+
+    .level-progress {
+        max-width: 110px;
+    }
+
+    .hud-coins-slot #coinsDisplay {
+        font-size: 9px !important;
+        padding: 7px 5px !important;
+    }
+
+    .hud-record {
+        min-width: 53px;
+        padding: 7px 6px;
     }
 }
 

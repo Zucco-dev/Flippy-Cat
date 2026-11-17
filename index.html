@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -12,22 +13,350 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" type="image/png" href="/icons/icon-192.png">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
-
     <link rel="stylesheet" href="style.css">
-    <script src="game.js" defer></script>
 
-    <script>
-        if ("serviceWorker" in navigator) {
-            window.addEventListener("load", () => {
-                navigator.serviceWorker.register("/service-worker.js")
-                    .catch(error => console.error(error));
-            });
+    <style>
+        .menu-hud {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto auto;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            margin-bottom: 18px;
+            text-align: left;
         }
-    </script>
+
+        .hud-player {
+            min-width: 0;
+        }
+
+        .hud-caption {
+            color: #b8a8ce;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            margin-bottom: 3px;
+        }
+
+        .hud-nickname {
+            display: block;
+            max-width: 100%;
+            padding: 2px 0;
+            border: 0;
+            background: transparent;
+            color: white;
+            font-size: 17px;
+            font-weight: 900;
+            text-align: left;
+            overflow-wrap: anywhere;
+            cursor: pointer;
+        }
+
+        .hud-nickname:hover {
+            color: #c99aff;
+        }
+
+        .level-progress {
+            max-width: 145px;
+            margin-top: 7px;
+        }
+
+        .level-progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 4px;
+            color: #cdb9e5;
+            font-size: 8px;
+            font-weight: 800;
+        }
+
+        .level-progress-track {
+            height: 5px;
+            width: 100%;
+            overflow: hidden;
+            border-radius: 20px;
+            background: #100b1c;
+            border: 1px solid #49315e;
+        }
+
+        .level-progress-fill {
+            width: 0%;
+            height: 100%;
+            border-radius: 20px;
+            background: linear-gradient(90deg, #8238e8, #c99aff);
+            box-shadow: 0 0 8px #a66bff88;
+            transition: width .35s ease;
+        }
+
+        .hud-coins-slot {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hud-coins-slot #coinsDisplay {
+            margin: 0 !important;
+            padding: 8px 9px !important;
+            width: auto !important;
+            white-space: nowrap;
+            font-size: 11px !important;
+            border-radius: 10px !important;
+        }
+
+        /* RECORDE E MÚSICA SEPARADOS */
+        .hud-record-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .hud-record {
+            min-width: 65px;
+            padding: 8px 10px;
+            text-align: center;
+            background: #100b1c;
+            border: 1px solid #684493;
+            border-radius: 12px;
+        }
+
+        .hud-record strong {
+            display: block;
+            color: #ffe2a1;
+            font-size: 21px;
+            line-height: 1.2;
+        }
+
+        .hud-record span {
+            color: #b8a8ce;
+            font-size: 9px;
+            font-weight: 900;
+        }
+
+        .hud-music-slot {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 30px;
+        }
+
+        .hud-music-slot button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 30px;
+            padding: 0;
+            border: 1px solid #684493;
+            border-radius: 9px;
+            background: #211333;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .hud-music-slot button:hover {
+            background: #49305f;
+            transform: scale(1.08);
+        }
+
+        .nickname-row {
+            display: none !important;
+        }
+
+        .nickname-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(5, 3, 12, .82);
+            backdrop-filter: blur(7px);
+        }
+
+        .nickname-modal.active {
+            display: flex;
+        }
+
+        .nickname-modal-content {
+            width: 100%;
+            max-width: 340px;
+            padding: 25px 22px;
+            border: 1px solid #8b5cf6;
+            border-radius: 20px;
+            background: linear-gradient(145deg, #211333, #100b1c);
+            box-shadow: 0 0 35px #8b5cf644;
+            text-align: center;
+            animation: nicknameModalIn .2s ease;
+        }
+
+        .nickname-modal-icon {
+            font-size: 42px;
+            margin-bottom: 8px;
+        }
+
+        .nickname-modal-content h2 {
+            margin: 0 0 7px;
+            color: white;
+            font-size: 21px;
+        }
+
+        .nickname-modal-content p {
+            margin: 0 0 18px;
+            color: #b8a8ce;
+            font-size: 12px;
+        }
+
+        .nickname-modal-content input {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 13px 14px;
+            border: 1px solid #684493;
+            border-radius: 11px;
+            outline: none;
+            background: #100b1c;
+            color: white;
+            font-size: 15px;
+            text-align: center;
+        }
+
+        .nickname-modal-content input:focus {
+            border-color: #b58aff;
+            box-shadow: 0 0 0 3px #8b5cf633;
+        }
+
+        .nickname-modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 17px;
+        }
+
+        .nickname-modal-actions button {
+            flex: 1;
+            padding: 12px 8px;
+            border: 0;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+        .nickname-cancel {
+            background: #30223e;
+            color: #d8c5ed;
+        }
+
+        .nickname-save {
+            background: linear-gradient(135deg, #8238e8, #a66bff);
+            color: white;
+        }
+
+        .nickname-modal-actions button:active {
+            transform: scale(.97);
+        }
+
+        @keyframes nicknameModalIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px) scale(.96);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .menu-cat-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 125px;
+            margin: 4px 0 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-cat {
+            font-size: 76px;
+            display: inline-block;
+            filter: drop-shadow(0 8px 15px #a66bff55);
+            animation: menuCatFloat 2.8s ease-in-out infinite;
+            user-select: none;
+        }
+
+        .menu-cat-shadow {
+            position: absolute;
+            width: 65px;
+            height: 10px;
+            bottom: 13px;
+            border-radius: 50%;
+            background: #a66bff;
+            opacity: .15;
+            filter: blur(9px);
+            animation: menuCatShadow 2.8s ease-in-out infinite;
+        }
+
+        @keyframes menuCatFloat {
+            0%, 100% {
+                transform: translateY(7px) rotate(-3deg);
+            }
+            50% {
+                transform: translateY(-13px) rotate(3deg);
+            }
+        }
+
+        @keyframes menuCatShadow {
+            0%, 100% {
+                transform: scale(1);
+                opacity: .15;
+            }
+            50% {
+                transform: scale(.7);
+                opacity: .08;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .menu-hud {
+                gap: 5px;
+            }
+
+            .hud-nickname {
+                font-size: 14px;
+            }
+
+            .level-progress {
+                max-width: 110px;
+            }
+
+            .hud-coins-slot #coinsDisplay {
+                font-size: 9px !important;
+                padding: 7px 5px !important;
+            }
+
+            .hud-record {
+                min-width: 53px;
+                padding: 7px 6px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .menu-cat,
+            .menu-cat-shadow {
+                animation: none;
+            }
+        }
+    </style>
 </head>
 
 <body>
     <main class="app">
+
         <div class="stars" id="stars"></div>
 
         <header class="logo" id="logo">
@@ -37,7 +366,45 @@
         </header>
 
         <section class="panel" id="menu">
-            <label for="nickname">SEU NICKNAME</label>
+
+            <div class="menu-hud">
+
+                <div class="hud-player">
+                    <div class="hud-caption">JOGADOR</div>
+
+                    <button
+                        type="button"
+                        class="hud-nickname"
+                        id="hudNickname"
+                        title="Clique para mudar seu nickname"
+                    >
+                        Visitante ✏️
+                    </button>
+
+                    <div class="level-progress">
+                        <div class="level-progress-info">
+                            <strong>NÍVEL <span id="level">1</span></strong>
+                            <span id="levelRemaining">100% restante</span>
+                        </div>
+
+                        <div class="level-progress-track">
+                            <div class="level-progress-fill" id="levelProgressFill"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hud-coins-slot" id="hudCoinsSlot"></div>
+
+                <div class="hud-record-column">
+                    <div class="hud-record">
+                        <strong id="record">0</strong>
+                        <span>🏆 RECORDE</span>
+                    </div>
+
+                    <div class="hud-music-slot" id="hudMusicSlot"></div>
+                </div>
+
+            </div>
 
             <div class="nickname-row">
                 <input
@@ -45,81 +412,67 @@
                     type="text"
                     maxlength="20"
                     placeholder="Digite seu nickname"
-                    autocomplete="nickname"
                 >
 
-                <button id="saveNickname" class="save-button">
-                    Salvar
-                </button>
+                <button id="saveNickname" type="button">Salvar</button>
             </div>
 
-            <div class="stats">
-                <div class="stat">
-                    <span>⭐</span>
-                    <strong id="level">1</strong>
-                    <small>NÍVEL</small>
-                </div>
-
-                <div class="stat">
-                    <span>🏆</span>
-                    <strong id="record">0</strong>
-                    <small>RECORDE</small>
-                </div>
+            <div class="menu-cat-area">
+                <div class="menu-cat-shadow"></div>
+                <div class="menu-cat">🐱</div>
             </div>
 
-            <button id="skinsButton" class="skins-button">
-                🐾 SKINS
-            </button>
-
-            <button id="achievementsButton" class="achievements-button">
-                🏆 CONQUISTAS
-            </button>
-
-            <button id="playButton" class="play-button">
+            <button id="playButton" class="play-button" type="button">
                 ▶ JOGAR
             </button>
 
+            <button id="skinsButton" class="skins-button" type="button">
+                🐾 SKINS
+            </button>
+
+            <button
+                id="achievementsButton"
+                class="achievements-button"
+                type="button"
+            >
+                🏆 CONQUISTAS
+            </button>
+
             <p class="hint">Prepare suas patinhas para a aventura!</p>
+
         </section>
 
-        <!-- PAINEL DE SKINS -->
         <section class="skins-panel" id="skinsPanel" hidden>
+
             <div class="skins-header">
                 <h2>🐾 ESCOLHA SEU GATINHO</h2>
-                <button id="closeSkins" class="close-button">✕</button>
+                <button id="closeSkins" class="close-button" type="button">✕</button>
             </div>
-
-            <p>Escolha uma skin para conhecer melhor!</p>
 
             <div class="skin-selector" id="skinSelector"></div>
 
             <div class="skin-preview-panel" id="skinPreview" hidden>
                 <h3 id="previewName">Gato Clássico</h3>
 
-                <canvas
-                    id="previewCanvas"
-                    width="240"
-                    height="170"
-                    aria-label="Prévia do personagem"
-                ></canvas>
+                <canvas id="previewCanvas" width="240" height="170"></canvas>
 
                 <p id="previewDescription"></p>
 
-                <button
-                    id="equipSkinButton"
-                    class="equip-button"
-                    type="button"
-                >
+                <button id="equipSkinButton" class="equip-button" type="button">
                     EQUIPAR
                 </button>
             </div>
+
         </section>
 
-        <!-- PAINEL DE CONQUISTAS -->
         <section class="achievements-panel" id="achievementsPanel" hidden>
+
             <div class="achievements-header">
                 <h2>🏆 CONQUISTAS</h2>
-                <button id="closeAchievements" class="close-button">✕</button>
+
+                <button id="closeAchievements" class="close-button" type="button">
+                    ✕
+                </button>
             </div>
 
             <p class="achievements-description">
@@ -129,7 +482,7 @@
             <div class="achievement-progress">
                 <div class="achievement-progress-text">
                     <span>Seu progresso</span>
-                    <strong id="achievementCount">0/5</strong>
+                    <strong id="achievementCount">0/36</strong>
                 </div>
 
                 <div class="achievement-progress-bar">
@@ -138,11 +491,13 @@
             </div>
 
             <div class="achievement-list" id="achievementList"></div>
+
         </section>
 
         <section class="game-panel" id="gameScreen" hidden>
+
             <div class="game-top">
-                <button id="backButton" class="small-button">
+                <button id="backButton" class="small-button" type="button">
                     ← Menu
                 </button>
 
@@ -151,18 +506,13 @@
                 </div>
             </div>
 
-            <canvas
-                id="gameCanvas"
-                width="360"
-                height="520"
-                aria-label="Jogo Flippy Cat"
-            ></canvas>
+            <canvas id="gameCanvas" width="360" height="520"></canvas>
 
             <div class="game-message" id="gameMessage">
                 <h2>Pronto para voar?</h2>
                 <p>Clique no jogo ou pressione ESPAÇO!</p>
 
-                <button id="startButton" class="play-button">
+                <button id="startButton" class="play-button" type="button">
                     COMEÇAR
                 </button>
             </div>
@@ -170,11 +520,228 @@
             <p class="game-hint">
                 Clique, toque na tela ou pressione ESPAÇO para voar.
             </p>
+
         </section>
 
-        <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        <div
+            class="nickname-modal"
+            id="nicknameModal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="nicknameModalTitle"
+        >
+            <div class="nickname-modal-content">
 
-        <footer>FLIPPY CAT © 2026 · FEITO COM 💜</footer>
+                <h2 id="nicknameModalTitle">Alterar nickname</h2>
+
+                <p>Escolha como você quer ser chamado no jogo.</p>
+
+                <input
+                    type="text"
+                    id="nicknameModalInput"
+                    maxlength="20"
+                    placeholder="Seu nickname"
+                    autocomplete="off"
+                >
+
+                <div class="nickname-modal-actions">
+                    <button type="button" class="nickname-cancel" id="cancelNickname">
+                        CANCELAR
+                    </button>
+
+                    <button type="button" class="nickname-save" id="confirmNickname">
+                        SALVAR
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="toast" id="toast"></div>
+
+        <footer>
+            FLIPPY CAT © 2026 · FEITO COM 💜
+        </footer>
+
     </main>
+
+    <script src="game.js?v=2" defer></script>
+
+    <script>
+        window.addEventListener("load", () => {
+            const nicknameButton = document.getElementById("hudNickname");
+            const nicknameInput = document.getElementById("nickname");
+            const saveNicknameButton = document.getElementById("saveNickname");
+
+            const modal = document.getElementById("nicknameModal");
+            const modalInput = document.getElementById("nicknameModalInput");
+            const cancelButton = document.getElementById("cancelNickname");
+            const confirmButton = document.getElementById("confirmNickname");
+
+            const recordElement = document.getElementById("record");
+            const levelElement = document.getElementById("level");
+            const progressFill = document.getElementById("levelProgressFill");
+            const remainingText = document.getElementById("levelRemaining");
+
+            const coinsSlot = document.getElementById("hudCoinsSlot");
+            const musicSlot = document.getElementById("hudMusicSlot");
+            const menuElement = document.getElementById("menu");
+
+            function updateNicknameDisplay() {
+                const nickname = nicknameInput.value.trim();
+
+                nicknameButton.textContent =
+                    nickname ? nickname + " ✏️" : "Visitante ✏️";
+            }
+
+            function openNicknameModal() {
+                modalInput.value = nicknameInput.value.trim();
+                modal.classList.add("active");
+
+                setTimeout(() => {
+                    modalInput.focus();
+                    modalInput.select();
+                }, 50);
+            }
+
+            function closeNicknameModal() {
+                modal.classList.remove("active");
+                nicknameButton.focus();
+            }
+
+            function saveNewNickname() {
+                const newName = modalInput.value.trim().slice(0, 20);
+
+                if (!newName) {
+                    modalInput.focus();
+                    return;
+                }
+
+                nicknameInput.value = newName;
+                saveNicknameButton.click();
+
+                updateNicknameDisplay();
+                closeNicknameModal();
+            }
+
+            function updateLevelProgress() {
+                const points = Math.max(
+                    0,
+                    Number(recordElement.textContent) || 0
+                );
+
+                const currentLevel = Math.floor(points / 5) + 1;
+                const pointsInLevel = points % 5;
+                const progress = (pointsInLevel / 5) * 100;
+                const remaining = 100 - progress;
+
+                levelElement.textContent = currentLevel;
+                progressFill.style.width = progress + "%";
+                remainingText.textContent =
+                    Math.round(remaining) + "% restante";
+            }
+
+            function moveCoinsToHud() {
+                const coins = document.getElementById("coinsDisplay");
+
+                if (coins && !coinsSlot.contains(coins)) {
+                    coinsSlot.appendChild(coins);
+                }
+            }
+
+            function moveMusicToHud() {
+                if (!musicSlot) return;
+
+                const musicButtons = document.querySelectorAll(
+                    "#menu button"
+                );
+
+                musicButtons.forEach(button => {
+                    const text = button.textContent || "";
+
+                    const isMusicButton =
+                        button.dataset.flippyMusic === "true" ||
+                        text.includes("MÚSICA") ||
+                        text.includes("MUSICA");
+
+                    if (!isMusicButton) return;
+
+                    button.dataset.flippyMusic = "true";
+
+                    if (!musicSlot.contains(button)) {
+                        musicSlot.appendChild(button);
+                    }
+
+                    const isOff =
+                        text.includes("DESLIGADA") ||
+                        text.includes("🔇");
+
+                    button.textContent = isOff ? "🔇" : "🔊";
+                    button.title = isOff
+                        ? "Ativar música"
+                        : "Desativar música";
+
+                    button.setAttribute("aria-label", button.title);
+                });
+            }
+
+            nicknameButton.addEventListener("click", openNicknameModal);
+            cancelButton.addEventListener("click", closeNicknameModal);
+            confirmButton.addEventListener("click", saveNewNickname);
+
+            modal.addEventListener("click", event => {
+                if (event.target === modal) {
+                    closeNicknameModal();
+                }
+            });
+
+            modalInput.addEventListener("keydown", event => {
+                if (event.key === "Enter") {
+                    saveNewNickname();
+                }
+
+                if (event.key === "Escape") {
+                    closeNicknameModal();
+                }
+            });
+
+            const recordObserver = new MutationObserver(updateLevelProgress);
+
+            recordObserver.observe(recordElement, {
+                childList: true,
+                characterData: true,
+                subtree: true
+            });
+
+            const menuObserver = new MutationObserver(() => {
+                moveCoinsToHud();
+                moveMusicToHud();
+            });
+
+            menuObserver.observe(menuElement, {
+                childList: true,
+                subtree: true,
+                characterData: true
+            });
+
+            updateNicknameDisplay();
+            updateLevelProgress();
+            moveCoinsToHud();
+            moveMusicToHud();
+        });
+    </script>
+
+    <script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", () => {
+                navigator.serviceWorker.register("/service-worker.js")
+                    .catch(error => console.error(
+                        "Erro ao registrar Service Worker:",
+                        error
+                    ));
+            });
+        }
+    </script>
+
 </body>
 </html>
