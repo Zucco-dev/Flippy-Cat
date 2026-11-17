@@ -517,6 +517,7 @@ let animationId = null;
 let lastTime = 0;
 let elapsed = 0;
 let pipeTimer = 0;
+let pipesUntilSpecial = 0;
 let toastTimer = null;
 let recordBeatenThisMatch = false;
 
@@ -682,8 +683,8 @@ function updateCoinsDisplay() {
     }
 }
 
-function earnCoin() {
-    player.coins++;
+function earnCoin(amount = 1) {
+    player.coins += amount;
     savePlayer();
     updateCoinsDisplay();
 }
@@ -756,9 +757,9 @@ function createScenarioShop() {
     // Coloca o controle dentro do quadro do recorde, abaixo de "RECORDE".
     const musicSlot = document.getElementById("hudMusicSlot");
 
-if (musicSlot) {
-    musicSlot.appendChild(musicButton);
-}
+    if (musicSlot) {
+        musicSlot.appendChild(musicButton);
+    }
 
     updateMusicButton();
 
@@ -897,7 +898,7 @@ function renderScenarios() {
 
         const price = document.createElement("small");
         price.textContent = unlocked ? "Desbloqueado" : `🪙 ${scenario.price} moedas`;
-        price.style.cssText = "color:#f5dcff;margin:7px 0;font-size:11px;";
+                price.style.cssText = "color:#f5dcff;margin:7px 0;font-size:11px;";
 
         const button = document.createElement("button");
         button.type = "button";
@@ -1336,6 +1337,7 @@ function resetGame() {
     score = 0;
     elapsed = 0;
     pipeTimer = 0;
+    pipesUntilSpecial = 0;
     pipes = [];
     player.consecutivePipes = 0;
 
@@ -1370,6 +1372,7 @@ function startGame() {
     score = 0;
     elapsed = 0;
     pipeTimer = 0;
+    pipesUntilSpecial = 0;
     pipes = [];
     player.consecutivePipes = 0;
     recordBeatenThisMatch = false;
@@ -1456,15 +1459,37 @@ document.addEventListener("visibilitychange", () => {
 
 function createPipe() {
     const margin = 65;
-    const available = canvas.height - PIPE_GAP - margin * 2;
 
-    const topHeight = margin + Math.random() * Math.max(1, available);
+    // Canos especiais aparecem aleatoriamente, sem ficarem muito próximos.
+    const isSpecial = pipesUntilSpecial === 0 && Math.random() < 0.22;
+    const moveAmplitude = 55;
+    const minTop = margin + (isSpecial ? moveAmplitude : 0);
+    const maxTop = canvas.height - PIPE_GAP - margin - (isSpecial ? moveAmplitude : 0);
+    const topHeight = minTop + Math.random() * Math.max(1, maxTop - minTop);
 
-    pipes.push({
+    if (isSpecial) {
+        pipesUntilSpecial = 2 + Math.floor(Math.random() * 3);
+    } else if (pipesUntilSpecial > 0) {
+        pipesUntilSpecial--;
+    }
+
+    const pipe = {
         x: canvas.width + 10,
         top: topHeight,
-        passed: false
-    });
+        bottom: topHeight + PIPE_GAP,
+        passed: false,
+        special: isSpecial,
+        coinCollected: false
+    };
+
+    if (isSpecial) {
+        pipe.baseTop = pipe.top;
+        pipe.baseBottom = pipe.bottom;
+        pipe.moveTime = Math.random() * Math.PI * 2;
+        pipe.moveAmplitude = moveAmplitude;
+    }
+
+    pipes.push(pipe);
 }
 
 // ========================================
@@ -1487,6 +1512,30 @@ function update(delta) {
 
     for (const pipe of pipes) {
         pipe.x -= PIPE_SPEED * delta;
+
+        if (pipe.special) {
+            pipe.moveTime += delta * 0.0018;
+            const offset = Math.sin(pipe.moveTime) * pipe.moveAmplitude;
+
+            pipe.top = pipe.baseTop + offset;
+            pipe.bottom = pipe.baseBottom + offset;
+
+            // A moeda acompanha o centro do espaço livre entre os canos.
+            pipe.coinY = (pipe.top + pipe.bottom) / 2;
+
+            if (!pipe.coinCollected) {
+                const coinX = pipe.x + PIPE_WIDTH / 2;
+                const closeX = Math.abs(bird.x - coinX) < CAT_HALF_WIDTH + 11;
+                const closeY = Math.abs(bird.y - pipe.coinY) < CAT_HALF_HEIGHT + 11;
+
+                if (closeX && closeY) {
+                    pipe.coinCollected = true;
+                    earnCoin(10);
+                    showToast("Moeda especial! +10 moedas 🪙");
+                    playScoreSound();
+                }
+            }
+        }
 
         if (!pipe.passed && pipe.x + PIPE_WIDTH < bird.x) {
             pipe.passed = true;
@@ -1536,7 +1585,7 @@ function update(delta) {
 
         const hitsPipe =
             bird.y - CAT_HALF_HEIGHT < pipe.top ||
-            bird.y + CAT_HALF_HEIGHT > pipe.top + PIPE_GAP;
+            bird.y + CAT_HALF_HEIGHT > pipe.bottom;
 
         if (overlapsX && hitsPipe) {
             endGame();
@@ -1744,8 +1793,8 @@ function drawCloud(x, y, scale) {
 }
 
 function drawPipe(pipe) {
-    const scenario = getCurrentScenario();
-    const bottomY = pipe.top + PIPE_GAP;
+        const scenario = getCurrentScenario();
+    const bottomY = pipe.bottom;
     const bottomHeight = canvas.height - bottomY;
 
     ctx.fillStyle = scenario.pipe;
@@ -1770,6 +1819,25 @@ function drawPipe(pipe) {
     ctx.fillStyle = "rgba(255,255,255,.45)";
     ctx.fillRect(pipe.x + 9, 0, 4, Math.max(0, pipe.top - 20));
     ctx.fillRect(pipe.x + 9, bottomY + 20, 4, Math.max(0, bottomHeight - 20));
+
+    if (pipe.special && !pipe.coinCollected) {
+        const coinX = pipe.x + PIPE_WIDTH / 2;
+        const coinY = (pipe.top + pipe.bottom) / 2;
+
+        ctx.save();
+        ctx.font = "24px Segoe UI Emoji, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.filter = "brightness(1.4) saturate(1.55)";
+        ctx.shadowColor = "#ffea00";
+        ctx.shadowBlur = 14;
+        ctx.fillText("🪙", coinX, coinY);
+        ctx.globalCompositeOperation = "lighter";
+        ctx.globalAlpha = 0.7;
+        ctx.shadowBlur = 0;
+        ctx.fillText("🪙", coinX, coinY);
+        ctx.restore();
+    }
 }
 
 // ========================================
