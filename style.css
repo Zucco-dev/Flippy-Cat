@@ -120,7 +120,9 @@ button {
 .panel,
 .game-panel,
 .skins-panel,
-.achievements-panel {
+.achievements-panel,
+.missions-panel,
+.daily-login-panel {
     width: 100%;
     max-width: 420px;
     padding: 26px;
@@ -262,6 +264,253 @@ button {
 .achievements-button:hover {
     background: linear-gradient(135deg, #634725, #49305f);
     transform: translateY(-2px);
+}
+
+.menu-shortcuts {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 2px;
+    min-height: 0;
+}
+
+.menu-shortcut-button {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    color: white;
+    font-size: 22px;
+    line-height: 1;
+    background: transparent;
+    box-shadow: none;
+    transition: transform 0.2s, filter 0.2s;
+}
+
+.menu-shortcut-button:hover {
+    transform: scale(1.1);
+    filter: brightness(1.15);
+}
+
+.missions-shortcut {
+    border-color: transparent;
+    background: transparent;
+}
+
+.daily-login-shortcut {
+    border-color: transparent;
+    background: transparent;
+}
+
+.missions-panel,
+.daily-login-panel {
+    max-height: min(88vh, 760px);
+    overflow-y: auto;
+}
+
+.missions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.missions-header h2 {
+    font-size: 17px;
+    font-weight: 900;
+}
+
+.daily-login-card,
+.daily-mission-card {
+    padding: 14px;
+    background: #100b1c;
+    border: 1px solid #59452a;
+    border-radius: 14px;
+}
+
+.daily-login-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: linear-gradient(120deg, #3d2b18, #21172d);
+}
+
+.daily-login-intro {
+    margin: 0 0 12px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.daily-reward-track {
+    display: flex;
+    gap: 5px;
+    margin: 0 0 14px;
+    padding: 5px 1px 9px;
+    overflow-x: auto;
+}
+
+.daily-reward-day {
+    position: relative;
+    display: flex;
+    flex: 1 0 40px;
+    min-width: 40px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 8px 3px;
+    border: 1px solid #59452a;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #34291c, #21172d);
+    color: #d5c8ae;
+    text-align: center;
+}
+
+.daily-reward-day.today {
+    border: 2px solid #ffe25b;
+    background: linear-gradient(180deg, #755515, #49351f);
+    color: #fff3a3;
+    box-shadow: 0 0 14px #ffd84d66;
+}
+
+.daily-reward-day.claimed {
+    border-color: #7da85d;
+    background: linear-gradient(180deg, #29452d, #1e3024);
+    color: #e1f4c0;
+}
+
+.daily-reward-day-label {
+    font-size: 9px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.daily-reward-coin {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.daily-reward-amount {
+    font-size: 9px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.daily-reward-check {
+    position: absolute;
+    top: -5px;
+    right: -4px;
+    color: #9ae66d;
+    font-size: 15px;
+    text-shadow: 0 1px 3px #000;
+}
+
+.daily-login-copy h3,
+.daily-mission-card h3 {
+    color: #ffe2a1;
+    font-size: 14px;
+    font-weight: 900;
+    margin-bottom: 5px;
+}
+
+.daily-login-copy p,
+.daily-mission-card p {
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.daily-login-copy small {
+    display: block;
+    margin-top: 6px;
+    color: #ffd477;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.reward-button {
+    flex-shrink: 0;
+    padding: 9px 11px;
+    border: 0;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #ffd84d, #e99717);
+    color: #4d2e00;
+    font-size: 11px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.reward-button:disabled {
+    background: #493f2a;
+    color: #d2bd8a;
+    cursor: default;
+}
+
+.missions-description {
+    margin: 16px 0 10px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.daily-mission-list {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.daily-mission-card {
+    border-color: #49315e;
+}
+
+.daily-mission-card.completed {
+    border-color: #9d7947;
+}
+
+.daily-mission-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.daily-mission-reward {
+    flex-shrink: 0;
+    color: #ffd477;
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.daily-mission-progress-text {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0 6px;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.daily-mission-progress {
+    height: 7px;
+    overflow: hidden;
+    background: #30213d;
+    border-radius: 20px;
+}
+
+.daily-mission-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ffd84d, #ff9d28);
+    border-radius: inherit;
+    transition: width 0.25s ease;
+}
+
+.daily-mission-card .reward-button {
+    width: 100%;
+    margin-top: 10px;
 }
 
 /* PAINEL DE SKINS */
@@ -616,11 +865,11 @@ button {
 /* MÚSICA TOTALMENTE FORA DO QUADRADO */
 .hud-music-slot {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start !important;
     align-items: center;
     min-height: 25px;
     padding: 0;
-    margin: 0;
+    margin: 5px 0 0 !important;
     border: none !important;
     background: transparent !important;
     box-shadow: none !important;
@@ -779,7 +1028,9 @@ footer {
 
     .panel,
     .skins-panel,
-    .achievements-panel {
+    .achievements-panel,
+    .missions-panel,
+    .daily-login-panel {
         padding: 22px 18px;
     }
 

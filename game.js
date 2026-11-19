@@ -29,11 +29,25 @@ const achievementList = $("achievementList");
 const achievementCount = $("achievementCount");
 const achievementProgressFill = $("achievementProgressFill");
 
+const missionsButton = $("missionsButton");
+const missionsPanel = $("missionsPanel");
+const closeMissionsButton = $("closeMissions");
+const dailyLoginButton = $("dailyLoginButton");
+const dailyLoginPanel = $("dailyLoginPanel");
+const closeDailyLoginButton = $("closeDailyLogin");
+const dailyLoginDescription = $("dailyLoginDescription");
+const dailyLoginStreak = $("dailyLoginStreak");
+const claimDailyLoginButton = $("claimDailyLogin");
+const dailyRewardTrack = $("dailyRewardTrack");
+const dailyMissionList = $("dailyMissionList");
+
 const menu = $("menu");
 const logo = $("logo");
 const gameScreen = $("gameScreen");
 const canvas = $("gameCanvas");
 const ctx = canvas.getContext("2d");
+const menuFlightCanvas = $("menuFlightCanvas");
+const menuFlightCtx = menuFlightCanvas.getContext("2d");
 
 const scoreElement = $("score");
 const levelElement = $("level");
@@ -481,6 +495,22 @@ const ACHIEVEMENTS = [
     { id: "king_of_skies", category: "✨ Secretas", name: "Rei dos céus", description: "Alcançar 150 pontos em uma partida.", emoji: "👑", secret: true, test: () => score >= 150 }
 ];
 
+const DAILY_MISSION_POOL = {
+    matches: [
+        { id: "play_once", title: "Primeira aventura", description: "Jogue 1 partida.", emoji: "🐾", type: "matches", target: 1, reward: 6 },
+        { id: "play_three", title: "Gatinho persistente", description: "Jogue 3 partidas.", emoji: "🎮", type: "matches", target: 3, reward: 10 }
+    ],
+    score: [
+        { id: "score_five", title: "Voo caprichado", description: "Faça 5 pontos em uma partida.", emoji: "🪽", type: "score", target: 5, reward: 8 },
+        { id: "score_ten", title: "Nas alturas", description: "Faça 10 pontos em uma partida.", emoji: "🚀", type: "score", target: 10, reward: 14 }
+    ],
+    bonus: [
+        { id: "special_coin", title: "Moeda da sorte", description: "Pegue uma moeda especial.", emoji: "🪙", type: "specialCoins", target: 1, reward: 10 },
+        { id: "earn_ten_coins", title: "Junte moedinhas", description: "Ganhe 10 moedas jogando.", emoji: "💰", type: "coins", target: 10, reward: 8 },
+        { id: "earn_twenty_coins", title: "Bolso cheio", description: "Ganhe 20 moedas jogando.", emoji: "🤑", type: "coins", target: 20, reward: 14 }
+    ]
+};
+
 // ========================================
 // DADOS DO JOGADOR
 // ========================================
@@ -498,6 +528,11 @@ const player = {
     restarts: 0,
     dailyDate: "",
     dailyMatches: 0,
+    dailyMissionDate: "",
+    dailyMissionProgress: {},
+    claimedDailyMissions: [],
+    lastDailyLoginDate: "",
+    dailyLoginStreak: 0,
     daysPlayed: [],
     unlockedAchievements: [],
     recordsBroken: 0,
@@ -574,6 +609,15 @@ function loadPlayer() {
             player.restarts = validNumber(data.restarts);
             player.dailyDate = typeof data.dailyDate === "string" ? data.dailyDate : "";
             player.dailyMatches = validNumber(data.dailyMatches);
+            player.dailyMissionDate = typeof data.dailyMissionDate === "string" ? data.dailyMissionDate : "";
+            player.dailyMissionProgress = data.dailyMissionProgress && typeof data.dailyMissionProgress === "object" && !Array.isArray(data.dailyMissionProgress)
+                ? Object.fromEntries(Object.entries(data.dailyMissionProgress).map(([id, value]) => [id, validNumber(value)]))
+                : {};
+            player.claimedDailyMissions = Array.isArray(data.claimedDailyMissions)
+                ? [...new Set(data.claimedDailyMissions.filter(id => typeof id === "string"))]
+                : [];
+            player.lastDailyLoginDate = typeof data.lastDailyLoginDate === "string" ? data.lastDailyLoginDate : "";
+            player.dailyLoginStreak = validNumber(data.dailyLoginStreak);
             player.daysPlayed = Array.isArray(data.daysPlayed)
                 ? [...new Set(data.daysPlayed.filter(d => typeof d === "string"))]
                 : [];
@@ -611,9 +655,12 @@ function loadPlayer() {
 
     nicknameInput.value = player.nickname;
 
+    refreshDailyState();
+
     updateProgress();
     updateCoinsDisplay();
     checkAllAchievements();
+    renderDailyPanel();
 }
 
 function validNumber(value) {
@@ -685,6 +732,7 @@ function updateCoinsDisplay() {
 
 function earnCoin(amount = 1) {
     player.coins += amount;
+    trackDailyMissionProgress("coins", amount);
     savePlayer();
     updateCoinsDisplay();
 }
@@ -852,6 +900,8 @@ function openScenarios() {
     menu.hidden = true;
     skinsPanel.hidden = true;
     achievementsPanel.hidden = true;
+    missionsPanel.hidden = true;
+    dailyLoginPanel.hidden = true;
     scenariosPanel.hidden = false;
 
     renderScenarios();
@@ -967,6 +1017,8 @@ function selectScenario(scenarioId) {
 function openSkins() {
     menu.hidden = true;
     achievementsPanel.hidden = true;
+    missionsPanel.hidden = true;
+    dailyLoginPanel.hidden = true;
     scenariosPanel.hidden = true;
     skinsPanel.hidden = false;
 
@@ -1118,6 +1170,8 @@ function openAchievements() {
     menu.hidden = true;
     skinsPanel.hidden = true;
     scenariosPanel.hidden = true;
+    missionsPanel.hidden = true;
+    dailyLoginPanel.hidden = true;
     achievementsPanel.hidden = false;
     renderAchievements();
 }
@@ -1213,6 +1267,224 @@ function checkAllAchievements() {
     renderAchievements();
 }
 
+function getLocalDateKey(date = new Date()) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
+function getTodayMissions() {
+    const dateNumber = Number(getLocalDateKey().replaceAll("-", ""));
+    const matchMission = DAILY_MISSION_POOL.matches[dateNumber % DAILY_MISSION_POOL.matches.length];
+    const scoreMission = DAILY_MISSION_POOL.score[Math.floor(dateNumber / 2) % DAILY_MISSION_POOL.score.length];
+    const bonusMission = DAILY_MISSION_POOL.bonus[Math.floor(dateNumber / 3) % DAILY_MISSION_POOL.bonus.length];
+    return [matchMission, scoreMission, bonusMission];
+}
+
+function refreshDailyState() {
+    const today = getLocalDateKey();
+    if (player.dailyMissionDate !== today) {
+        player.dailyMissionDate = today;
+        player.dailyMissionProgress = {};
+        player.claimedDailyMissions = [];
+        savePlayer();
+    }
+}
+
+function trackDailyMissionProgress(type, amount, useMaximum = false) {
+    refreshDailyState();
+    let changed = false;
+
+    getTodayMissions().forEach(mission => {
+        if (mission.type !== type || player.claimedDailyMissions.includes(mission.id)) return;
+        const current = validNumber(player.dailyMissionProgress[mission.id]);
+        const next = Math.min(mission.target, useMaximum ? Math.max(current, amount) : current + amount);
+        if (next !== current) {
+            player.dailyMissionProgress[mission.id] = next;
+            changed = true;
+        }
+    });
+
+    if (changed) {
+        savePlayer();
+        renderDailyPanel();
+    }
+}
+
+function openMissions() {
+    menu.hidden = true;
+    skinsPanel.hidden = true;
+    scenariosPanel.hidden = true;
+    achievementsPanel.hidden = true;
+    dailyLoginPanel.hidden = true;
+    missionsPanel.hidden = false;
+    renderDailyPanel();
+}
+
+function closeMissions() {
+    missionsPanel.hidden = true;
+    menu.hidden = false;
+}
+
+function openDailyLogin() {
+    menu.hidden = true;
+    skinsPanel.hidden = true;
+    scenariosPanel.hidden = true;
+    achievementsPanel.hidden = true;
+    missionsPanel.hidden = true;
+    dailyLoginPanel.hidden = false;
+    renderDailyPanel();
+}
+
+function closeDailyLogin() {
+    dailyLoginPanel.hidden = true;
+    menu.hidden = false;
+}
+
+missionsButton.addEventListener("click", openMissions);
+closeMissionsButton.addEventListener("click", closeMissions);
+dailyLoginButton.addEventListener("click", openDailyLogin);
+closeDailyLoginButton.addEventListener("click", closeDailyLogin);
+claimDailyLoginButton.addEventListener("click", claimDailyLogin);
+
+function renderDailyPanel() {
+    if (!dailyMissionList) return;
+    refreshDailyState();
+
+    const today = getLocalDateKey();
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const continuesStreak = player.lastDailyLoginDate === getLocalDateKey(yesterday);
+    const alreadyClaimedLogin = player.lastDailyLoginDate === today;
+    const nextStreak = alreadyClaimedLogin
+        ? player.dailyLoginStreak
+        : continuesStreak ? player.dailyLoginStreak + 1 : 1;
+    const loginReward = 5 + Math.min(nextStreak - 1, 6);
+
+    dailyLoginDescription.textContent = alreadyClaimedLogin
+        ? "Recompensa de hoje já resgatada. Volte amanhã!"
+        : `Resgate ${loginReward} moedas hoje!`;
+    dailyLoginStreak.textContent = `🔥 Sequência: ${nextStreak} dia(s)`;
+    claimDailyLoginButton.textContent = alreadyClaimedLogin ? "RESGATADO ✓" : `RESGATAR 🪙 ${loginReward}`;
+    claimDailyLoginButton.disabled = alreadyClaimedLogin;
+
+    dailyRewardTrack.innerHTML = "";
+    const firstRewardDay = Math.max(1, nextStreak - 6);
+    for (let index = 0; index < 7; index++) {
+        const dayNumber = firstRewardDay + index;
+        const claimed = alreadyClaimedLogin
+            ? dayNumber <= nextStreak
+            : dayNumber < nextStreak;
+        const isToday = dayNumber === nextStreak;
+        const dayCard = document.createElement("div");
+        dayCard.className = `daily-reward-day${claimed ? " claimed" : ""}${isToday ? " today" : ""}`;
+        if (isToday) dayCard.setAttribute("aria-current", "date");
+
+        const dayLabel = document.createElement("span");
+        dayLabel.className = "daily-reward-day-label";
+        dayLabel.textContent = `DIA ${dayNumber}`;
+        const coinIcon = document.createElement("span");
+        coinIcon.className = "daily-reward-coin";
+        coinIcon.textContent = "🪙";
+        const amount = document.createElement("span");
+        amount.className = "daily-reward-amount";
+        amount.textContent = `+${5 + Math.min(dayNumber - 1, 6)}`;
+        dayCard.append(dayLabel, coinIcon, amount);
+
+        if (claimed) {
+            const check = document.createElement("span");
+            check.className = "daily-reward-check";
+            check.textContent = "✓";
+            dayCard.appendChild(check);
+        }
+
+        dailyRewardTrack.appendChild(dayCard);
+    }
+
+    dailyMissionList.innerHTML = "";
+    getTodayMissions().forEach(mission => {
+        const progress = Math.min(mission.target, validNumber(player.dailyMissionProgress[mission.id]));
+        const completed = progress >= mission.target;
+        const claimed = player.claimedDailyMissions.includes(mission.id);
+        const card = document.createElement("article");
+        card.className = `daily-mission-card${completed ? " completed" : ""}`;
+
+        const top = document.createElement("div");
+        top.className = "daily-mission-top";
+        const copy = document.createElement("div");
+        const title = document.createElement("h3");
+        title.textContent = `${mission.emoji} ${mission.title}`;
+        const description = document.createElement("p");
+        description.textContent = mission.description;
+        copy.append(title, description);
+        const reward = document.createElement("span");
+        reward.className = "daily-mission-reward";
+        reward.textContent = `🪙 ${mission.reward}`;
+        top.append(copy, reward);
+
+        const progressText = document.createElement("div");
+        progressText.className = "daily-mission-progress-text";
+        const status = document.createElement("span");
+        status.textContent = claimed ? "Recompensa resgatada" : completed ? "Missão concluída!" : "Progresso";
+        const count = document.createElement("span");
+        count.textContent = `${progress}/${mission.target}`;
+        progressText.append(status, count);
+
+        const bar = document.createElement("div");
+        bar.className = "daily-mission-progress";
+        const fill = document.createElement("div");
+        fill.className = "daily-mission-progress-fill";
+        fill.style.width = `${(progress / mission.target) * 100}%`;
+        bar.appendChild(fill);
+
+        const claimButton = document.createElement("button");
+        claimButton.type = "button";
+        claimButton.className = "reward-button";
+        claimButton.disabled = !completed || claimed;
+        claimButton.textContent = claimed ? "RESGATADA ✓" : completed ? `RESGATAR 🪙 ${mission.reward}` : "CONCLUA A MISSÃO";
+        claimButton.addEventListener("click", () => claimDailyMission(mission));
+
+        card.append(top, progressText, bar, claimButton);
+        dailyMissionList.appendChild(card);
+    });
+}
+
+function claimDailyLogin() {
+    refreshDailyState();
+    const today = getLocalDateKey();
+    if (player.lastDailyLoginDate === today) return;
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const nextStreak = player.lastDailyLoginDate === getLocalDateKey(yesterday)
+        ? player.dailyLoginStreak + 1
+        : 1;
+    const reward = 5 + Math.min(nextStreak - 1, 6);
+    player.lastDailyLoginDate = today;
+    player.dailyLoginStreak = nextStreak;
+    player.coins += reward;
+    savePlayer();
+    updateCoinsDisplay();
+    renderDailyPanel();
+    showToast(`Login diário! +${reward} moedas 🪙`);
+}
+
+function claimDailyMission(mission) {
+    refreshDailyState();
+    if (
+        !mission || player.claimedDailyMissions.includes(mission.id) ||
+        validNumber(player.dailyMissionProgress[mission.id]) < mission.target
+    ) return;
+
+    player.claimedDailyMissions.push(mission.id);
+    player.coins += mission.reward;
+    savePlayer();
+    updateCoinsDisplay();
+    renderDailyPanel();
+    showToast(`Missão concluída! +${mission.reward} moedas 🪙`);
+}
+
 // ========================================
 // MENSAGENS
 // ========================================
@@ -1271,6 +1543,8 @@ function openGame() {
     logo.hidden = true;
     skinsPanel.hidden = true;
     achievementsPanel.hidden = true;
+    missionsPanel.hidden = true;
+    dailyLoginPanel.hidden = true;
     scenariosPanel.hidden = true;
     gameScreen.hidden = false;
 
@@ -1300,7 +1574,7 @@ backButton.addEventListener("click", backToMenu);
 // ========================================
 
 function registerMatch() {
-    const today = new Date().toLocaleDateString("en-CA");
+    const today = getLocalDateKey();
 
     player.matches++;
 
@@ -1310,6 +1584,7 @@ function registerMatch() {
     }
 
     player.dailyMatches++;
+    trackDailyMissionProgress("matches", 1);
 
     if (!player.daysPlayed.includes(today)) {
         player.daysPlayed.push(today);
@@ -1531,6 +1806,7 @@ function update(delta) {
                 if (closeX && closeY) {
                     pipe.coinCollected = true;
                     earnCoin(10);
+                    trackDailyMissionProgress("specialCoins", 1);
                     showToast("Moeda especial! +10 moedas 🪙");
                     playScoreSound();
                 }
@@ -1541,6 +1817,7 @@ function update(delta) {
             pipe.passed = true;
             score++;
             player.consecutivePipes++;
+            trackDailyMissionProgress("score", score, true);
 
             earnCoin();
             playScoreSound();
@@ -2085,6 +2362,84 @@ function drawCat() {
     drawCatCharacter(ctx, bird.x, bird.y, skin, 0.78, bird.rotation);
 }
 
+let menuFlightTime = 0;
+let menuFlightLastTime = null;
+let menuFlightOffset = 0;
+
+function animateMenuFlight(timestamp) {
+    if (!menu.hidden && !document.hidden) {
+        const delta = menuFlightLastTime === null
+            ? 16
+            : Math.min(timestamp - menuFlightLastTime, 50);
+        menuFlightLastTime = timestamp;
+        menuFlightTime += delta;
+
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+        ctx.restore();
+
+        const scenario = getCurrentScenario();
+        const cropHeight = canvas.width * menuFlightCanvas.height / menuFlightCanvas.width;
+        const cropYByScenario = {
+            space: 60,
+            forest: 325,
+            candy: 160,
+            city: 320,
+            volcano: 285
+        };
+        const cropY = cropYByScenario[scenario.decoration] || 180;
+        const width = menuFlightCanvas.width;
+        const height = menuFlightCanvas.height;
+
+        menuFlightOffset = (menuFlightOffset + delta * 0.03) % width;
+        menuFlightCtx.clearRect(0, 0, width, height);
+        menuFlightCtx.save();
+        menuFlightCtx.globalAlpha = 0.72;
+        menuFlightCtx.filter = "blur(1.5px)";
+        menuFlightCtx.drawImage(
+            canvas, 0, cropY, canvas.width, cropHeight,
+            -menuFlightOffset, 0, width, height
+        );
+        menuFlightCtx.drawImage(
+            canvas, 0, cropY, canvas.width, cropHeight,
+            width - menuFlightOffset, 0, width, height
+        );
+        menuFlightCtx.restore();
+
+        menuFlightCtx.save();
+        menuFlightCtx.globalCompositeOperation = "destination-in";
+        const horizontalFade = menuFlightCtx.createLinearGradient(0, 0, width, 0);
+        horizontalFade.addColorStop(0, "rgba(255,255,255,0)");
+        horizontalFade.addColorStop(0.16, "rgba(255,255,255,0.55)");
+        horizontalFade.addColorStop(0.34, "rgba(255,255,255,0.9)");
+        horizontalFade.addColorStop(0.66, "rgba(255,255,255,0.9)");
+        horizontalFade.addColorStop(0.84, "rgba(255,255,255,0.55)");
+        horizontalFade.addColorStop(1, "rgba(255,255,255,0)");
+        menuFlightCtx.fillStyle = horizontalFade;
+        menuFlightCtx.fillRect(0, 0, width, height);
+
+        const verticalFade = menuFlightCtx.createLinearGradient(0, 0, 0, height);
+        verticalFade.addColorStop(0, "rgba(255,255,255,0)");
+        verticalFade.addColorStop(0.16, "rgba(255,255,255,0.45)");
+        verticalFade.addColorStop(0.38, "rgba(255,255,255,0.85)");
+        verticalFade.addColorStop(0.62, "rgba(255,255,255,0.85)");
+        verticalFade.addColorStop(0.84, "rgba(255,255,255,0.45)");
+        verticalFade.addColorStop(1, "rgba(255,255,255,0)");
+        menuFlightCtx.fillStyle = verticalFade;
+        menuFlightCtx.fillRect(0, 0, width, height);
+        menuFlightCtx.restore();
+
+        const skin = SKINS.find(item => item.id === player.selectedSkin) || SKINS[0];
+        const flyY = height * 0.52 + Math.sin(menuFlightTime / 520) * 10;
+        const flyRotation = Math.sin(menuFlightTime / 700) * 0.05;
+        drawCatCharacter(menuFlightCtx, width * 0.46, flyY, skin, 0.95, flyRotation);
+    }
+
+    requestAnimationFrame(animateMenuFlight);
+}
+
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawBackground();
@@ -2176,3 +2531,4 @@ createScenarioShop();
 loadPlayer();
 createStars();
 resetGame();
+requestAnimationFrame(animateMenuFlight);
