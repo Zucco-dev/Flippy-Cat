@@ -42,12 +42,12 @@ const dailyRewardTrack = $("dailyRewardTrack");
 const dailyMissionList = $("dailyMissionList");
 
 const menu = $("menu");
-const logo = $("logo");
 const gameScreen = $("gameScreen");
 const canvas = $("gameCanvas");
 const ctx = canvas.getContext("2d");
 const menuFlightCanvas = $("menuFlightCanvas");
 const menuFlightCtx = menuFlightCanvas.getContext("2d");
+const menuCatArea = $("menuCatArea");
 
 const scoreElement = $("score");
 const levelElement = $("level");
@@ -255,9 +255,10 @@ function startMusic() {
 }
 
 function setMusicMode(mode) {
+    const modeChanged = musicMode !== mode;
     musicMode = mode;
 
-    if (musicEnabled && audioContext && audioContext.state === "running") {
+    if (modeChanged && musicEnabled && audioContext && audioContext.state === "running") {
         startMusic();
     }
 }
@@ -563,10 +564,10 @@ let coinsDisplay;
 const GRAVITY = 0.00085;
 const FLAP_FORCE = -0.32;
 const PIPE_SPEED = 0.13;
-const PIPE_WIDTH = 62;
+const PIPE_WIDTH = 56;
 const PIPE_GAP = 155;
-const CAT_HALF_WIDTH = 32;
-const CAT_HALF_HEIGHT = 29;
+const CAT_HALF_WIDTH = 27;
+const CAT_HALF_HEIGHT = 25;
 
 // ========================================
 // PERFIL E SALVAMENTO
@@ -823,7 +824,7 @@ function createScenarioShop() {
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 18px;
+        padding: 16px;
         overflow-y: auto;
         box-sizing: border-box;
     `;
@@ -831,13 +832,15 @@ function createScenarioShop() {
     const content = document.createElement("div");
 
     content.style.cssText = `
-        width: min(100%, 520px);
+        width: min(100%, 760px);
+        height: auto;
+        min-height: 0;
         max-height: 90vh;
         overflow-y: auto;
         background: linear-gradient(145deg, #291641, #120c20);
         border: 1px solid #8054ad;
         border-radius: 22px;
-        padding: 22px;
+        padding: max(18px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
         color: white;
         box-shadow: 0 15px 60px rgba(0,0,0,.5);
         box-sizing: border-box;
@@ -866,8 +869,9 @@ function createScenarioShop() {
     list.id = "scenarioList";
     list.style.cssText = `
         display:grid;
-        grid-template-columns:repeat(auto-fit,minmax(135px,1fr));
-        gap:12px;
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        width:100%;
+        gap:16px;
     `;
 
     const closeButton = document.createElement("button");
@@ -925,7 +929,7 @@ function renderScenarios() {
         const card = document.createElement("div");
 
         card.style.cssText = `
-            background:linear-gradient(145deg,${scenario.skyTop},${scenario.skyBottom});
+            background:radial-gradient(circle at 50% 12%,rgba(255,255,255,.2),transparent 45%),linear-gradient(145deg,${scenario.skyTop},${scenario.skyBottom});
             border:2px solid ${selected ? "#d5adff" : "rgba(255,255,255,.16)"};
             border-radius:15px;
             padding:14px 10px;
@@ -936,15 +940,21 @@ function renderScenarios() {
             align-items:center;
             justify-content:center;
             box-sizing:border-box;
+            overflow:hidden;
+            box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 9px 22px ${scenario.pipe}30;
         `;
 
         const emoji = document.createElement("div");
         emoji.textContent = scenario.emoji;
-        emoji.style.cssText = "font-size:34px;margin-bottom:7px;";
+        emoji.style.cssText = "font-size:38px;margin-bottom:7px;filter:drop-shadow(0 5px 7px rgba(0,0,0,.28));";
 
         const name = document.createElement("strong");
         name.textContent = scenario.name;
         name.style.cssText = "font-size:14px;color:white;";
+
+        const tagline = document.createElement("small");
+        tagline.textContent = scenario.description;
+        tagline.style.cssText = "font-size:10px;line-height:1.3;color:rgba(255,255,255,.78);margin:6px 0;";
 
         const price = document.createElement("small");
         price.textContent = unlocked ? "Desbloqueado" : `🪙 ${scenario.price} moedas`;
@@ -975,7 +985,7 @@ function renderScenarios() {
 
         button.addEventListener("click", () => selectScenario(scenario.id));
 
-        card.append(emoji, name, price, button);
+        card.append(emoji, name, tagline, price, button);
         list.appendChild(card);
     });
 
@@ -1540,7 +1550,6 @@ function openGame() {
     savePlayer();
 
     menu.hidden = true;
-    logo.hidden = true;
     skinsPanel.hidden = true;
     achievementsPanel.hidden = true;
     missionsPanel.hidden = true;
@@ -1559,7 +1568,6 @@ function backToMenu() {
 
     gameScreen.hidden = true;
     menu.hidden = false;
-    logo.hidden = false;
 
     state = "ready";
 
@@ -1780,7 +1788,7 @@ function update(delta) {
 
     bird.rotation = Math.min(0.8, Math.max(-0.45, bird.velocity * 1.5));
 
-    if (pipeTimer >= 1550) {
+    if (pipeTimer >= 1650) {
         createPipe();
         pipeTimer = 0;
     }
@@ -1889,17 +1897,31 @@ function drawBackground() {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    if (scenario.decoration === "space") {
-        drawSpaceDecorations();
-    } else if (scenario.decoration === "forest") {
-        drawForestDecorations();
-    } else if (scenario.decoration === "candy") {
-        drawCandyDecorations();
-    } else if (scenario.decoration === "city") {
-        drawCityDecorations();
-    } else if (scenario.decoration === "volcano") {
-        drawVolcanoDecorations();
-    }
+    const drawDecorations = () => {
+        if (scenario.decoration === "space") {
+            drawSpaceDecorations();
+        } else if (scenario.decoration === "forest") {
+            drawForestDecorations();
+        } else if (scenario.decoration === "candy") {
+            drawCandyDecorations();
+        } else if (scenario.decoration === "city") {
+            drawCityDecorations();
+        } else if (scenario.decoration === "volcano") {
+            drawVolcanoDecorations();
+        }
+    };
+
+    const scrolling = state === "running" || state === "over";
+    const sceneryOffset = scrolling
+        ? (elapsed * 0.025) % canvas.width
+        : 0;
+
+    ctx.save();
+    ctx.translate(-sceneryOffset, 0);
+    drawDecorations();
+    ctx.translate(canvas.width, 0);
+    drawDecorations();
+    ctx.restore();
 
     ctx.fillStyle = scenario.ground;
     ctx.fillRect(0, canvas.height - 12, canvas.width, 12);
@@ -1926,53 +1948,145 @@ function drawStars() {
 function drawSpaceDecorations() {
     drawStars();
 
-    ctx.fillStyle = "rgba(190,150,255,.12)";
+    const planetX = canvas.width * 0.78;
+    const planetY = canvas.height * 0.22;
+    const glow = ctx.createRadialGradient(planetX, planetY, 10, planetX, planetY, 62);
+    glow.addColorStop(0, "rgba(211,178,255,.3)");
+    glow.addColorStop(1, "rgba(142,91,218,0)");
+    ctx.fillStyle = glow;
     ctx.beginPath();
-    ctx.arc(canvas.width * 0.78, canvas.height * 0.22, 38, 0, Math.PI * 2);
+    ctx.arc(planetX, planetY, 62, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = "#e7d7ff";
+    ctx.save();
+    ctx.translate(planetX, planetY);
+    ctx.rotate(-0.25);
+    ctx.strokeStyle = "rgba(210,175,255,.7)";
+    ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.arc(canvas.width * 0.78, canvas.height * 0.22, 24, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, 37, 12, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    const planet = ctx.createRadialGradient(-9, -10, 2, 0, 0, 25);
+    planet.addColorStop(0, "#fff6ff");
+    planet.addColorStop(1, "#ad88df");
+    ctx.fillStyle = planet;
+    ctx.beginPath();
+    ctx.arc(0, 0, 24, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = "#b9a0d8";
+    ctx.fillStyle = "rgba(112,76,157,.35)";
     ctx.beginPath();
-    ctx.arc(canvas.width * 0.75, canvas.height * 0.20, 5, 0, Math.PI * 2);
-    ctx.arc(canvas.width * 0.83, canvas.height * 0.25, 4, 0, Math.PI * 2);
+    ctx.arc(-8, -7, 6, 0, Math.PI * 2);
+    ctx.arc(10, 8, 4, 0, Math.PI * 2);
     ctx.fill();
+    ctx.restore();
 }
 
 function drawForestDecorations() {
-    for (let i = 0; i < 5; i++) {
-        const x = i * 85 - 20;
-        const y = canvas.height - 12;
+    const y = canvas.height - 12;
 
-        ctx.fillStyle = "#0c3425";
+    ctx.fillStyle = "#103c2e";
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.quadraticCurveTo(72, y - 40, 145, y - 13);
+    ctx.quadraticCurveTo(252, y - 55, canvas.width, y - 18);
+    ctx.lineTo(canvas.width, y);
+    ctx.closePath();
+    ctx.fill();
+
+    for (let i = 0; i < 6; i++) {
+        const x = i * 76 - 24;
+        const height = 82 + (i % 3) * 18;
+        const width = 68 + (i % 2) * 10;
+
+        const leaves = ctx.createLinearGradient(x, y - height, x + width, y);
+        leaves.addColorStop(0, i % 2 ? "#398958" : "#2e7d50");
+        leaves.addColorStop(1, i % 2 ? "#145335" : "#10472f");
+        ctx.fillStyle = leaves;
         ctx.beginPath();
         ctx.moveTo(x, y);
-        ctx.lineTo(x + 35, y - 95 - (i % 2) * 20);
-        ctx.lineTo(x + 70, y);
+        ctx.lineTo(x + width / 2, y - height);
+        ctx.lineTo(x + width, y);
         ctx.closePath();
         ctx.fill();
 
-        ctx.fillStyle = "#236344";
+        ctx.fillStyle = "#4b3522";
+        ctx.fillRect(x + width * 0.43, y - 31, 9, 31);
+
+        ctx.fillStyle = i % 2 ? "#54a968" : "#45975d";
         ctx.beginPath();
-        ctx.moveTo(x + 15, y);
-        ctx.lineTo(x + 45, y - 70);
-        ctx.lineTo(x + 75, y);
+        ctx.moveTo(x + 9, y - 18);
+        ctx.lineTo(x + width / 2, y - height + 22);
+        ctx.lineTo(x + width - 8, y - 18);
         ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = "rgba(194,255,161,.8)";
+        ctx.beginPath();
+        ctx.arc(x + width * 0.34, y - height * 0.64, 3, 0, Math.PI * 2);
+        ctx.arc(x + width * 0.68, y - height * 0.42, 2.5, 0, Math.PI * 2);
         ctx.fill();
     }
 
-    drawCloud(55, 100, 0.55);
-    drawCloud(250, 175, 0.45);
+    drawCloud(55, 100, 0.62);
+    drawCloud(250, 175, 0.52);
+
+    for (let i = 0; i < 7; i++) {
+        const x = (i * 59 + 28) % canvas.width;
+        const fy = 180 + ((i * 43) % 150) + Math.sin(elapsed / 500 + i) * 5;
+        ctx.fillStyle = "rgba(205,255,123,.75)";
+        ctx.shadowColor = "#baff78";
+        ctx.shadowBlur = 9;
+        ctx.beginPath();
+        ctx.arc(x, fy, 2, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.shadowBlur = 0;
 }
 
 function drawCandyDecorations() {
     drawCloud(55, 100, 0.8);
     drawCloud(260, 170, 0.7);
     drawCloud(145, 300, 0.55);
+
+    const hill = ctx.createLinearGradient(0, canvas.height - 118, 0, canvas.height - 12);
+    hill.addColorStop(0, "#ed8bc5");
+    hill.addColorStop(1, "#a54fc0");
+    ctx.fillStyle = hill;
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height - 12);
+    ctx.lineTo(0, canvas.height - 75);
+    ctx.quadraticCurveTo(90, canvas.height - 145, 175, canvas.height - 72);
+    ctx.quadraticCurveTo(270, canvas.height - 128, canvas.width, canvas.height - 65);
+    ctx.lineTo(canvas.width, canvas.height - 12);
+    ctx.closePath();
+    ctx.fill();
+
+    const drawLollipop = (x, y, color, scale) => {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(scale, scale);
+        ctx.strokeStyle = "#ffe7f5";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(0, 8);
+        ctx.lineTo(5, 37);
+        ctx.stroke();
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(0, 0, 15, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#fff1fa";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(0, 0, 9, -0.8, 1.8);
+        ctx.stroke();
+        ctx.restore();
+    };
+
+    drawLollipop(36, canvas.height - 91, "#ff709d", 0.8);
+    drawLollipop(315, canvas.height - 100, "#ffc94f", 0.72);
 
     ctx.fillStyle = "#ffefad";
 
@@ -1988,6 +2102,27 @@ function drawCandyDecorations() {
 
 function drawCityDecorations() {
     const baseY = canvas.height - 12;
+    const sunset = ctx.createRadialGradient(canvas.width * 0.74, 145, 6, canvas.width * 0.74, 145, 90);
+    sunset.addColorStop(0, "rgba(255,209,139,.8)");
+    sunset.addColorStop(1, "rgba(255,166,111,0)");
+    ctx.fillStyle = sunset;
+    ctx.beginPath();
+    ctx.arc(canvas.width * 0.74, 145, 90, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#ffd493";
+    ctx.beginPath();
+    ctx.arc(canvas.width * 0.74, 145, 22, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Silhuetas distantes dão profundidade antes dos prédios iluminados.
+    for (let i = 0; i < 9; i++) {
+        const x = i * 45 - 12;
+        const width = 34 + (i % 2) * 8;
+        const height = 42 + (i % 4) * 17;
+        ctx.fillStyle = "rgba(28,39,70,.62)";
+        ctx.fillRect(x, baseY - height, width, height);
+    }
 
     for (let i = 0; i < 7; i++) {
         const width = 35 + (i % 3) * 12;
@@ -2018,6 +2153,14 @@ function drawCityDecorations() {
 function drawVolcanoDecorations() {
     const baseY = canvas.height - 12;
 
+    const eruptionGlow = ctx.createRadialGradient(215, baseY - 145, 2, 215, baseY - 145, 95);
+    eruptionGlow.addColorStop(0, "rgba(255,121,47,.48)");
+    eruptionGlow.addColorStop(1, "rgba(255,73,34,0)");
+    ctx.fillStyle = eruptionGlow;
+    ctx.beginPath();
+    ctx.arc(215, baseY - 145, 95, 0, Math.PI * 2);
+    ctx.fill();
+
     ctx.fillStyle = "#39171c";
     ctx.beginPath();
     ctx.moveTo(0, baseY);
@@ -2037,6 +2180,25 @@ function drawVolcanoDecorations() {
     ctx.fillStyle = "#ff7b38";
     ctx.beginPath();
     ctx.arc(215, baseY - 145, 9, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = "#ff653b";
+    ctx.lineWidth = 4;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(215, baseY - 136);
+    ctx.lineTo(206, baseY - 100);
+    ctx.lineTo(218, baseY - 78);
+    ctx.moveTo(121, baseY - 42);
+    ctx.lineTo(135, baseY - 62);
+    ctx.lineTo(130, baseY - 78);
+    ctx.stroke();
+
+    ctx.fillStyle = "rgba(66,48,55,.72)";
+    ctx.beginPath();
+    ctx.arc(199, baseY - 190, 15, 0, Math.PI * 2);
+    ctx.arc(217, baseY - 205, 20, 0, Math.PI * 2);
+    ctx.arc(237, baseY - 190, 14, 0, Math.PI * 2);
     ctx.fill();
 
     for (let i = 0; i < 12; i++) {
@@ -2359,12 +2521,270 @@ function drawCatCharacter(target, x, y, skin, scale = 1, rotation = 0) {
 
 function drawCat() {
     const skin = SKINS.find(item => item.id === player.selectedSkin) || SKINS[0];
-    drawCatCharacter(ctx, bird.x, bird.y, skin, 0.78, bird.rotation);
+    drawCatCharacter(ctx, bird.x, bird.y, skin, 0.65, bird.rotation);
 }
 
 let menuFlightTime = 0;
 let menuFlightLastTime = null;
 let menuFlightOffset = 0;
+
+function drawMenuCloud(target, x, y, scale, color = "rgba(255,255,255,.42)") {
+    target.save();
+    target.translate(x, y);
+    target.scale(scale, scale);
+    target.fillStyle = color;
+    target.beginPath();
+    target.arc(-22, 3, 16, 0, Math.PI * 2);
+    target.arc(-3, -8, 22, 0, Math.PI * 2);
+    target.arc(20, 1, 17, 0, Math.PI * 2);
+    target.rect(-25, -3, 48, 21);
+    target.fill();
+    target.restore();
+}
+
+function drawMenuLobbyBackground(target, width, height, scenario, time, offset) {
+    const sky = target.createLinearGradient(0, 0, 0, height);
+    sky.addColorStop(0, scenario.skyTop);
+    sky.addColorStop(1, scenario.skyBottom);
+    target.fillStyle = sky;
+    target.fillRect(0, 0, width, height);
+
+    const horizon = height * 0.82;
+    const drift = offset;
+
+    if (scenario.decoration === "forest") {
+        const sun = target.createRadialGradient(width * .72, height * .3, 2, width * .72, height * .3, height * .45);
+        sun.addColorStop(0, "rgba(157,255,183,.22)");
+        sun.addColorStop(1, "rgba(86,213,147,0)");
+        target.fillStyle = sun;
+        target.fillRect(0, 0, width, height);
+
+        for (let layer = 0; layer < 2; layer++) {
+            const spacing = Math.max(72, height * (layer ? .2 : .25));
+            const count = Math.ceil(width / spacing) + 7;
+            const baseY = horizon + layer * height * .035;
+            const speed = layer ? .9 : .48;
+            const phase = (offset * speed) % (spacing * 3);
+            for (let i = 0; i < count; i++) {
+                const x = i * spacing - phase - spacing * 2;
+                const treeH = height * (.15 + ((i * 37 + layer * 19) % 7) * .018);
+                const treeW = spacing * .82;
+                const green = layer ? ["#145239", "#1a6945", "#1c754b"][i % 3] : ["#103d31", "#15513a", "#19583d"][i % 3];
+                target.fillStyle = green;
+                target.beginPath();
+                target.moveTo(x, baseY);
+                target.lineTo(x + treeW / 2, baseY - treeH);
+                target.lineTo(x + treeW, baseY);
+                target.closePath();
+                target.fill();
+
+                if (layer) {
+                    target.fillStyle = "#4b3522";
+                    target.fillRect(x + treeW * .46, baseY - height * .035, treeW * .08, height * .04);
+                    target.fillStyle = "rgba(183,255,150,.55)";
+                    target.beginPath();
+                    target.arc(x + treeW * .35, baseY - treeH * .58, Math.max(1.5, height * .003), 0, Math.PI * 2);
+                    target.fill();
+                }
+            }
+        }
+
+        for (let i = 0; i < 7; i++) {
+            const x = ((i * width / 6 - offset * .24) % width + width) % width;
+            const y = height * (.17 + (i % 3) * .09);
+            const size = .42 + (i % 2) * .12;
+            drawMenuCloud(target, x, y, size, "rgba(226,255,238,.28)");
+            if (x < 90) drawMenuCloud(target, x + width, y, size, "rgba(226,255,238,.28)");
+            if (x > width - 90) drawMenuCloud(target, x - width, y, size, "rgba(226,255,238,.28)");
+        }
+
+        for (let i = 0; i < 20; i++) {
+            const x = (i * 193 + 47) % width;
+            const y = height * (.32 + ((i * 29) % 40) / 100) + Math.sin(time / 800 + i) * 5;
+            target.fillStyle = "rgba(212,255,128,.8)";
+            target.shadowColor = "#baff78";
+            target.shadowBlur = 10;
+            target.beginPath();
+            target.arc(x, y, Math.max(1.5, height * .002), 0, Math.PI * 2);
+            target.fill();
+        }
+        target.shadowBlur = 0;
+    } else if (scenario.decoration === "space") {
+        for (let i = 0; i < 100; i++) {
+            const x = ((i * 193 + 29 - drift * .58) % width + width) % width;
+            const y = ((i * 137 + 17) % Math.max(height * .9, 1));
+            const radius = i % 9 === 0 ? 2.3 : 1.2;
+            target.globalAlpha = .35 + (Math.sin(time / 900 + i) + 1) * .28;
+            target.fillStyle = i % 8 === 0 ? "#d8bdff" : "#ffffff";
+            target.beginPath();
+            target.arc(x, y, radius, 0, Math.PI * 2);
+            target.fill();
+        }
+        target.globalAlpha = 1;
+
+        const px = width * .72 + Math.sin(time / 9000) * width * .012;
+        const py = height * .24;
+        const glow = target.createRadialGradient(px, py, 4, px, py, height * .22);
+        glow.addColorStop(0, "rgba(201,166,255,.34)");
+        glow.addColorStop(1, "rgba(118,70,190,0)");
+        target.fillStyle = glow;
+        target.fillRect(px - height * .22, py - height * .22, height * .44, height * .44);
+        target.save();
+        target.translate(px, py);
+        target.rotate(-.24);
+        target.strokeStyle = "rgba(220,194,255,.72)";
+        target.lineWidth = Math.max(2, height * .006);
+        target.beginPath();
+        target.ellipse(0, 0, height * .085, height * .028, 0, 0, Math.PI * 2);
+        target.stroke();
+        const moon = target.createRadialGradient(-height * .025, -height * .035, 1, 0, 0, height * .06);
+        moon.addColorStop(0, "#fff7ff");
+        moon.addColorStop(1, "#aa83d8");
+        target.fillStyle = moon;
+        target.beginPath();
+        target.arc(0, 0, height * .06, 0, Math.PI * 2);
+        target.fill();
+        target.restore();
+    } else if (scenario.decoration === "candy") {
+        for (let i = 0; i < 8; i++) {
+            const x = ((i * width / 8 - offset * .48) % width + width) % width;
+            const y = height * (.13 + (i % 3) * .12);
+            const size = .58 + (i % 2) * .12;
+            drawMenuCloud(target, x, y, size, "rgba(255,255,255,.62)");
+            if (x < 110) drawMenuCloud(target, x + width, y, size, "rgba(255,255,255,.62)");
+            if (x > width - 110) drawMenuCloud(target, x - width, y, size, "rgba(255,255,255,.62)");
+        }
+        const hill = target.createLinearGradient(0, horizon - height * .12, 0, height);
+        hill.addColorStop(0, "#f18bc7");
+        hill.addColorStop(1, "#8848b1");
+        target.fillStyle = hill;
+        target.beginPath();
+        target.moveTo(0, horizon);
+        target.quadraticCurveTo(width * .16, horizon - height * .16, width * .34, horizon - height * .02);
+        target.quadraticCurveTo(width * .65, horizon - height * .2, width, horizon - height * .04);
+        target.lineTo(width, height);
+        target.lineTo(0, height);
+        target.closePath();
+        target.fill();
+
+        const candySpacing = Math.max(150, height * .2);
+        const candyPhase = (offset * .62) % (candySpacing * 3);
+        for (let i = 0; i < Math.ceil(width / candySpacing) + 7; i++) {
+            const x = i * candySpacing - candyPhase - candySpacing * 2;
+            const y = horizon - height * (.08 + (i % 3) * .035);
+            const r = height * (.02 + (i % 3) * .003);
+            target.strokeStyle = "#fff0f8";
+            target.lineWidth = Math.max(3, height * .009);
+            target.beginPath();
+            target.moveTo(x, y + r * .45);
+            target.lineTo(x + r * .12, y + r * 2.3);
+            target.stroke();
+            target.fillStyle = ["#ff669e", "#ffc84c", "#8ce5df"][i % 3];
+            target.beginPath();
+            target.arc(x, y, r, 0, Math.PI * 2);
+            target.fill();
+            target.strokeStyle = "rgba(255,255,255,.8)";
+            target.lineWidth = Math.max(2, height * .005);
+            target.beginPath();
+            target.arc(x, y, r * .56, -.8, 1.8);
+            target.stroke();
+        }
+        target.fillStyle = "rgba(255,250,197,.85)";
+        for (let i = 0; i < 34; i++) {
+            const x = (i * 173 + 22) % width;
+            const y = (i * 109 + 34) % (height * .78);
+            target.beginPath();
+            target.arc(x, y, i % 4 === 0 ? 2.2 : 1.2, 0, Math.PI * 2);
+            target.fill();
+        }
+    } else if (scenario.decoration === "city") {
+        const sunX = width * .73;
+        const sunY = height * .25;
+        const glow = target.createRadialGradient(sunX, sunY, 2, sunX, sunY, height * .23);
+        glow.addColorStop(0, "rgba(255,214,151,.65)");
+        glow.addColorStop(1, "rgba(255,144,115,0)");
+        target.fillStyle = glow;
+        target.fillRect(sunX - height * .23, sunY - height * .23, height * .46, height * .46);
+        target.fillStyle = "#ffe0a2";
+        target.beginPath();
+        target.arc(sunX, sunY, height * .04, 0, Math.PI * 2);
+        target.fill();
+
+        for (let layer = 0; layer < 2; layer++) {
+            const spacing = Math.max(62, height * (layer ? .12 : .16));
+            const patternLength = layer ? 4 : 4;
+            const phase = (offset * (layer ? 1 : .55)) % (spacing * patternLength);
+            const count = Math.ceil(width / spacing) + patternLength + 4;
+            for (let i = 0; i < count; i++) {
+                const x = i * spacing - phase - spacing * 2;
+                const buildingW = spacing * (.68 + (i % 2) * .08);
+                const buildingH = height * ((layer ? .14 : .09) + (i % 4) * .017);
+                const base = horizon + layer * height * .025;
+                target.fillStyle = layer ? (i % 2 ? "#202946" : "#273456") : "rgba(36,49,79,.7)";
+                target.fillRect(x, base - buildingH, buildingW, buildingH);
+                if (layer) {
+                    const rows = Math.floor(buildingH / Math.max(14, height * .027));
+                    const cols = Math.floor(buildingW / Math.max(14, height * .025));
+                    for (let row = 0; row < rows; row++) {
+                        for (let col = 0; col < cols; col++) {
+                            target.globalAlpha = .42 + ((i + row + col) % 3) * .18;
+                            target.fillStyle = (i + row + col) % 4 === 0 ? "#9de4ff" : "#ffd77c";
+                            target.fillRect(x + 8 + col * 15, base - buildingH + 10 + row * 16, 5, 7);
+                        }
+                    }
+                    target.globalAlpha = 1;
+                }
+            }
+        }
+    } else if (scenario.decoration === "volcano") {
+        const glow = target.createRadialGradient(width * .55, horizon - height * .22, 2, width * .55, horizon - height * .22, height * .38);
+        glow.addColorStop(0, "rgba(255,116,46,.42)");
+        glow.addColorStop(1, "rgba(255,57,37,0)");
+        target.fillStyle = glow;
+        target.fillRect(0, 0, width, height);
+
+        for (let i = 0; i < 4; i++) {
+            const x = width * (i * .34 - .12) + Math.sin(time / 4200 + i) * height * .02;
+            const peakY = horizon - height * (.13 + (i % 2) * .09);
+            target.fillStyle = i % 2 ? "#401c27" : "#55202a";
+            target.beginPath();
+            target.moveTo(x - width * .16, height);
+            target.lineTo(x, peakY);
+            target.lineTo(x + width * .2, height);
+            target.closePath();
+            target.fill();
+        }
+
+        target.fillStyle = "rgba(76,57,64,.7)";
+        for (let i = 0; i < 9; i++) {
+            const x = width * .55 + Math.sin(i * 1.7) * height * .055;
+            const y = horizon - height * (.23 + i * .035) + Math.sin(time / 1300 + i) * height * .018;
+            const r = height * (.025 + (i % 3) * .006);
+            target.beginPath();
+            target.arc(x, y, r, 0, Math.PI * 2);
+            target.fill();
+        }
+
+        for (let i = 0; i < 34; i++) {
+            const x = ((i * 181 + 29 - drift * .58) % width + width) % width;
+            const y = (i * 127 + time * (.012 + (i % 3) * .004)) % (height * .78);
+            target.fillStyle = i % 3 ? "#ff8b49" : "#ffd166";
+            target.shadowColor = "#ff6b32";
+            target.shadowBlur = 9;
+            target.beginPath();
+            target.arc(x, height - y, i % 5 === 0 ? 2.3 : 1.3, 0, Math.PI * 2);
+            target.fill();
+        }
+        target.shadowBlur = 0;
+    }
+
+    const shade = target.createLinearGradient(0, 0, 0, height);
+    shade.addColorStop(0, "rgba(8,5,18,.12)");
+    shade.addColorStop(.65, "rgba(8,5,18,0)");
+    shade.addColorStop(1, "rgba(8,5,18,.22)");
+    target.fillStyle = shade;
+    target.fillRect(0, 0, width, height);
+}
 
 function animateMenuFlight(timestamp) {
     if (!menu.hidden && !document.hidden) {
@@ -2374,67 +2794,30 @@ function animateMenuFlight(timestamp) {
         menuFlightLastTime = timestamp;
         menuFlightTime += delta;
 
-        ctx.save();
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        drawBackground();
-        ctx.restore();
+        const menuRect = menu.getBoundingClientRect();
+        const width = menuRect.width;
+        const height = menuRect.height;
+        const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+        const backingWidth = Math.round(width * pixelRatio);
+        const backingHeight = Math.round(height * pixelRatio);
+
+        if (menuFlightCanvas.width !== backingWidth || menuFlightCanvas.height !== backingHeight) {
+            menuFlightCanvas.width = backingWidth;
+            menuFlightCanvas.height = backingHeight;
+        }
+        menuFlightCtx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+        menuFlightCtx.clearRect(0, 0, width, height);
 
         const scenario = getCurrentScenario();
-        const cropHeight = canvas.width * menuFlightCanvas.height / menuFlightCanvas.width;
-        const cropYByScenario = {
-            space: 60,
-            forest: 325,
-            candy: 160,
-            city: 320,
-            volcano: 285
-        };
-        const cropY = cropYByScenario[scenario.decoration] || 180;
-        const width = menuFlightCanvas.width;
-        const height = menuFlightCanvas.height;
-
-        menuFlightOffset = (menuFlightOffset + delta * 0.03) % width;
-        menuFlightCtx.clearRect(0, 0, width, height);
-        menuFlightCtx.save();
-        menuFlightCtx.globalAlpha = 0.72;
-        menuFlightCtx.filter = "blur(1.5px)";
-        menuFlightCtx.drawImage(
-            canvas, 0, cropY, canvas.width, cropHeight,
-            -menuFlightOffset, 0, width, height
-        );
-        menuFlightCtx.drawImage(
-            canvas, 0, cropY, canvas.width, cropHeight,
-            width - menuFlightOffset, 0, width, height
-        );
-        menuFlightCtx.restore();
-
-        menuFlightCtx.save();
-        menuFlightCtx.globalCompositeOperation = "destination-in";
-        const horizontalFade = menuFlightCtx.createLinearGradient(0, 0, width, 0);
-        horizontalFade.addColorStop(0, "rgba(255,255,255,0)");
-        horizontalFade.addColorStop(0.16, "rgba(255,255,255,0.55)");
-        horizontalFade.addColorStop(0.34, "rgba(255,255,255,0.9)");
-        horizontalFade.addColorStop(0.66, "rgba(255,255,255,0.9)");
-        horizontalFade.addColorStop(0.84, "rgba(255,255,255,0.55)");
-        horizontalFade.addColorStop(1, "rgba(255,255,255,0)");
-        menuFlightCtx.fillStyle = horizontalFade;
-        menuFlightCtx.fillRect(0, 0, width, height);
-
-        const verticalFade = menuFlightCtx.createLinearGradient(0, 0, 0, height);
-        verticalFade.addColorStop(0, "rgba(255,255,255,0)");
-        verticalFade.addColorStop(0.16, "rgba(255,255,255,0.45)");
-        verticalFade.addColorStop(0.38, "rgba(255,255,255,0.85)");
-        verticalFade.addColorStop(0.62, "rgba(255,255,255,0.85)");
-        verticalFade.addColorStop(0.84, "rgba(255,255,255,0.45)");
-        verticalFade.addColorStop(1, "rgba(255,255,255,0)");
-        menuFlightCtx.fillStyle = verticalFade;
-        menuFlightCtx.fillRect(0, 0, width, height);
-        menuFlightCtx.restore();
+        menuFlightOffset += delta * 0.022;
+        drawMenuLobbyBackground(menuFlightCtx, width, height, scenario, menuFlightTime, menuFlightOffset);
 
         const skin = SKINS.find(item => item.id === player.selectedSkin) || SKINS[0];
-        const flyY = height * 0.52 + Math.sin(menuFlightTime / 520) * 10;
+        const areaRect = menuCatArea.getBoundingClientRect();
+        const flyX = areaRect.left - menuRect.left + areaRect.width * 0.46;
+        const flyY = areaRect.top - menuRect.top + areaRect.height * 0.52 + Math.sin(menuFlightTime / 520) * 10;
         const flyRotation = Math.sin(menuFlightTime / 700) * 0.05;
-        drawCatCharacter(menuFlightCtx, width * 0.46, flyY, skin, 0.95, flyRotation);
+        drawCatCharacter(menuFlightCtx, flyX, flyY, skin, 1, flyRotation);
     }
 
     requestAnimationFrame(animateMenuFlight);

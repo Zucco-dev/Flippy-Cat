@@ -3,7 +3,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
     <title>Flippy Cat</title>
 
@@ -278,13 +278,120 @@
             min-height: 140px;
             margin: 4px 0 15px;
             position: relative;
-            overflow: hidden;
         }
 
         .menu-flight-canvas {
-            display: block;
+            position: absolute;
+            inset: 0;
             width: 100%;
-            height: 140px;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            border-radius: inherit;
+        }
+
+        #menu {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            width: 100%;
+            max-width: none;
+            height: 100vh;
+            height: 100dvh;
+            min-height: 100vh;
+            min-height: 100dvh;
+            margin: 0;
+            padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: stretch;
+            gap: 12px;
+            background: linear-gradient(145deg, #261839dd, #181020e8);
+            border: 0;
+            border-radius: 0;
+            box-shadow: none;
+        }
+
+        #menu > :not(.menu-flight-canvas) {
+            position: relative;
+            z-index: 1;
+            width: min(100%, 500px);
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #menu .menu-hud {
+            width: min(100%, 500px);
+            margin-bottom: 0;
+        }
+
+        #menu > .menu-cat-area {
+            flex: 1 1 auto;
+            min-height: 110px;
+            margin-top: 8px;
+            margin-bottom: 8px;
+        }
+
+        #menu .hud-caption,
+        #menu .hud-nickname,
+        #menu .level-progress-info,
+        #menu .hint {
+            text-shadow: 0 1px 5px #080411cc;
+        }
+
+        #menu > .play-button {
+            margin: 0 auto;
+            border: 1px solid #d1a8ff;
+            box-shadow: 0 5px 0 #6328a8, 0 12px 28px #a66bff45;
+        }
+
+        #menu > .play-button:hover {
+            filter: brightness(1.08);
+            transform: translateY(-2px);
+        }
+
+        #menu > .skins-button,
+        #menu > .achievements-button {
+            margin-bottom: 0;
+        }
+
+        #menu > .hint {
+            margin-top: 8px;
+            margin-bottom: 0;
+        }
+
+        @media (max-height: 620px) {
+            #menu {
+                padding-top: max(8px, env(safe-area-inset-top));
+                padding-bottom: max(8px, env(safe-area-inset-bottom));
+                gap: 8px;
+            }
+
+            #menu > .menu-cat-area {
+                min-height: 60px;
+            }
+
+            #menu > .hint {
+                display: none;
+            }
+
+            #menu > .play-button {
+                padding-top: 12px;
+                padding-bottom: 12px;
+            }
+
+            #menu > .skins-button,
+            #menu > .achievements-button {
+                padding-top: 9px;
+                padding-bottom: 9px;
+            }
+
+            #menu .menu-shortcut-button {
+                width: 26px;
+                height: 26px;
+                font-size: 18px;
+            }
         }
 
         @media (max-width: 380px) {
@@ -311,9 +418,6 @@
             }
         }
 
-        @media (prefers-reduced-motion: reduce) {
-            .menu-flight-canvas { filter: none; }
-        }
     </style>
 </head>
 
@@ -322,13 +426,15 @@
 
         <div class="stars" id="stars"></div>
 
-        <header class="logo" id="logo">
-            <div class="cat-logo">🐱</div>
-            <h1>FLIPPY <span>CAT</span></h1>
-            <p>UM PEQUENO GATO, UMA GRANDE AVENTURA</p>
-        </header>
-
         <section class="panel" id="menu">
+
+            <canvas
+                id="menuFlightCanvas"
+                class="menu-flight-canvas"
+                width="320"
+                height="600"
+                aria-hidden="true"
+            ></canvas>
 
             <div class="menu-hud">
 
@@ -397,14 +503,7 @@
                 <button id="saveNickname" type="button">Salvar</button>
             </div>
 
-            <div class="menu-cat-area">
-                <canvas
-                    id="menuFlightCanvas"
-                    class="menu-flight-canvas"
-                    width="320"
-                    height="140"
-                    aria-hidden="true"
-                ></canvas>
+            <div class="menu-cat-area" id="menuCatArea">
             </div>
 
             <button id="playButton" class="play-button" type="button">
@@ -572,10 +671,6 @@
         </div>
 
         <div class="toast" id="toast"></div>
-
-        <footer>
-            FLIPPY CAT © 2026 · FEITO COM 💜
-        </footer>
 
     </main>
 
